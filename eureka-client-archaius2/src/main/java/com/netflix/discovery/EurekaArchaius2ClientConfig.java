@@ -1,9 +1,5 @@
 package com.netflix.discovery;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import com.google.inject.Inject;
 import com.netflix.appinfo.EurekaAccept;
 import com.netflix.archaius.api.Config;
@@ -12,12 +8,16 @@ import com.netflix.discovery.internal.util.InternalPrefixedConfig;
 import com.netflix.discovery.shared.transport.EurekaTransportConfig;
 
 import javax.inject.Singleton;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static com.netflix.discovery.PropertyBasedClientConfigConstants.*;
 
 @Singleton
 @ConfigurationSource(CommonConstants.CONFIG_FILE_NAME)
 public class EurekaArchaius2ClientConfig implements EurekaClientConfig {
+
     public static final String DEFAULT_ZONE = "defaultZone";
 
     private static final String DEFAULT_NAMESPACE = "eureka";
