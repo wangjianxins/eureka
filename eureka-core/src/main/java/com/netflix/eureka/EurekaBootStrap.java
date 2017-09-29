@@ -106,7 +106,7 @@ public class EurekaBootStrap implements ServletContextListener {
     public void contextInitialized(ServletContextEvent event) {
         try {
             initEurekaEnvironment();
-            initEurekaServerContext();
+             initEurekaServerContext();
 
             ServletContext sc = event.getServletContext();
             sc.setAttribute(EurekaServerContext.class.getName(), serverContext);

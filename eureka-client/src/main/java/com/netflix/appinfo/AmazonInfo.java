@@ -16,6 +16,16 @@
 
 package com.netflix.appinfo;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.netflix.discovery.converters.jackson.builder.StringInterningAmazonInfoBuilder;
+import com.netflix.discovery.internal.util.AmazonInfoUtils;
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,16 +36,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.netflix.discovery.converters.jackson.builder.StringInterningAmazonInfoBuilder;
-import com.netflix.discovery.internal.util.AmazonInfoUtils;
-import com.thoughtworks.xstream.annotations.XStreamOmitField;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An AWS specific {@link DataCenterInfo} implementation.
@@ -142,7 +142,6 @@ public class AmazonInfo implements DataCenterInfo, UniqueIdentifier {
             return getName();
         }
     }
-
 
     public static final class Builder {
         private static final Logger logger = LoggerFactory.getLogger(Builder.class);

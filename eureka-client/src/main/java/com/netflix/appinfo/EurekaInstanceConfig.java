@@ -15,9 +15,9 @@
  */
 package com.netflix.appinfo;
 
-import java.util.Map;
-
 import com.google.inject.ImplementedBy;
+
+import java.util.Map;
 
 /**
  * Configuration information required by the instance to register with Eureka
@@ -35,15 +35,20 @@ import com.google.inject.ImplementedBy;
  * Note that all configurations are not effective at runtime unless and
  * otherwise specified.
  * </p>
+ * // TODO 芋艿：疑问，这段 Note 的用途
+ *
+ * Eureka 应用对象配置接口
  *
  * @author Karthik Ranganathan
- *
  */
 @ImplementedBy(CloudInstanceConfig.class)
 public interface EurekaInstanceConfig {
 
     /**
      * Get the unique Id (within the scope of the appName) of this instance to be registered with eureka.
+     *
+     * 对象编号。
+     * 需要保证在相同应用名下唯一。
      *
      * @return the (appname scoped) unique id for this instance
      */
@@ -52,6 +57,8 @@ public interface EurekaInstanceConfig {
     /**
      * Get the name of the application to be registered with eureka.
      *
+     * 应用名
+     *
      * @return string denoting the name.
      */
     String getAppname();
@@ -59,9 +66,11 @@ public interface EurekaInstanceConfig {
     /**
      * Get the name of the application group to be registered with eureka.
      *
+     * 应用分组
+     *
      * @return string denoting the name.
      */
-    String getAppGroupName();
+    String getAppGroupName(); // TODO 芋艿：看看用途
 
     /**
      * Indicates whether the instance should be enabled for taking traffic as
@@ -69,6 +78,9 @@ public interface EurekaInstanceConfig {
      * need to do some pre-processing before it is ready to take traffic.
      *
      * :( public API typos are the worst. I think this was meant to be "OnInit".
+     *
+     * 应用初始化后是否开启
+     * // TODO 芋艿：看看用途
      *
      * @return true to immediately start taking traffic, false otherwise.
      */
@@ -78,6 +90,8 @@ public interface EurekaInstanceConfig {
      * Get the <code>non-secure</code> port on which the instance should receive
      * traffic.
      *
+     * 应用 http 端口
+     *
      * @return the non-secure port on which the instance should receive traffic.
      */
     int getNonSecurePort();
@@ -85,6 +99,8 @@ public interface EurekaInstanceConfig {
     /**
      * Get the <code>Secure port</code> on which the instance should receive
      * traffic.
+     *
+     * 应用 https 端口
      *
      * @return the secure port on which the instance should receive traffic.
      */
@@ -94,6 +110,8 @@ public interface EurekaInstanceConfig {
      * Indicates whether the <code>non-secure</code> port should be enabled for
      * traffic or not.
      *
+     * 应用 http 端口是否开启
+     *
      * @return true if the <code>non-secure</code> port is enabled, false
      *         otherwise.
      */
@@ -102,6 +120,8 @@ public interface EurekaInstanceConfig {
     /**
      * Indicates whether the <code>secure</code> port should be enabled for
      * traffic or not.
+     *
+     * 应用 https 端口是否开启
      *
      * @return true if the <code>secure</code> port is enabled, false otherwise.
      */
@@ -119,6 +139,11 @@ public interface EurekaInstanceConfig {
      * Note that the instance could still not take traffic if it implements
      * {@link HealthCheckCallback} and then decides to make itself unavailable.
      * </p>
+     *
+     * 租约续约频率，单位：秒。
+     * 应用不断通过按照该频率发送心跳给 Eureka-Server 以达到续约的作用。
+     * 当 Eureka-Server 超过最大频率未收到续约（心跳），契约失效，进行应用移除。
+     * 应用移除后，其他应用无法从 Eureka-Server 获取该应用。
      *
      * @return time in seconds
      */
@@ -138,6 +163,8 @@ public interface EurekaInstanceConfig {
      * .
      * </p>
      *
+     * 契约过期时间，单位：秒
+     *
      * @return value indicating time in seconds.
      */
     int getLeaseExpirationDurationInSeconds();
@@ -151,6 +178,9 @@ public interface EurekaInstanceConfig {
      * qualified domain name, that the users of your services will need to find
      * this instance.
      * </p>
+     *
+     * 虚拟主机名。
+     * 也可以叫做 VIPAddress 。
      *
      * @return the string indicating the virtual host name which the clients use
      *         to call this service.
@@ -167,6 +197,9 @@ public interface EurekaInstanceConfig {
      * this instance.
      * </p>
      *
+     * 虚拟安全主机名
+     * 也可以叫做 SecureVIPAddress 。
+     *
      * @return the string indicating the secure virtual host name which the
      *         clients use to call this service.
      */
@@ -177,6 +210,8 @@ public interface EurekaInstanceConfig {
      * instance. This information is specifically used in an AWS environment to
      * automatically put an instance out of service after the instance is
      * launched and it has been disabled for traffic..
+     *
+     * 跳过：AWS 使用
      *
      * @return the autoscaling group name associated with this instance.
      */
@@ -198,6 +233,8 @@ public interface EurekaInstanceConfig {
      * Gets the metadata name/value pairs associated with this instance. This
      * information is sent to eureka server and can be used by other instances.
      *
+     * 元数据( Metadata )集合
+     *
      * @return Map containing application-specific metadata.
      */
     Map<String, String> getMetadataMap();
@@ -206,6 +243,8 @@ public interface EurekaInstanceConfig {
      * Returns the data center this instance is deployed. This information is
      * used to get some AWS specific instance information if the instance is
      * deployed in AWS.
+     *
+     * 数据中心信息
      *
      * @return information that indicates which data center this instance is
      *         deployed in.
@@ -216,6 +255,8 @@ public interface EurekaInstanceConfig {
      * Get the IPAdress of the instance. This information is for academic
      * purposes only as the communication from other instances primarily happen
      * using the information supplied in {@link #getHostName(boolean)}.
+     *
+     * IP 地址
      *
      * @return the ip address of this instance.
      */
@@ -369,6 +410,9 @@ public interface EurekaInstanceConfig {
 
     /**
      * Get the namespace used to find properties.
+     *
+     * 配置命名空间
+     *
      * @return the namespace used to find properties.
      */
     String getNamespace();

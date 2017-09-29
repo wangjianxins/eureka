@@ -1,5 +1,8 @@
 package com.netflix.appinfo;
 
+import com.netflix.yunai.Done;
+
+@Done
 public interface RefreshableInstanceConfig {
 
     /**

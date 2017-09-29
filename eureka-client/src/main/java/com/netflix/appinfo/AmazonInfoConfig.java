@@ -1,10 +1,13 @@
 package com.netflix.appinfo;
 
+import com.netflix.yunai.Done;
+
 /**
  * Config related to loading of amazon metadata from the EC2 metadata url.
  *
  * @author David Liu
  */
+@Done
 public interface AmazonInfoConfig {
 
     /**

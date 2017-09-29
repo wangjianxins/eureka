@@ -34,7 +34,7 @@ public class Archaius2VipAddressResolver implements VipAddressResolver {
         Matcher matcher = VIP_ATTRIBUTES_PATTERN.matcher(result);
         while (matcher.find()) {
             String key = matcher.group(1);
-            String value = config.getString(key, "");
+            String value = config.getString(key, ""); // TODO 疑问：疑问，config 和 DynamicPropertyFactory.getInstance().
 
             logger.debug("att:" + matcher.group());
             logger.debug(", att key:" + key);

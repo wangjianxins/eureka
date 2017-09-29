@@ -15,15 +15,15 @@
  */
 package com.netflix.appinfo;
 
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import com.netflix.config.ConfigurationManager;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.discovery.CommonConstants;
 import com.netflix.discovery.internal.util.Archaius1Utils;
 import org.apache.commons.configuration.Configuration;
+
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static com.netflix.appinfo.PropertyBasedInstanceConfigConstants.*;
 
@@ -45,13 +45,24 @@ import static com.netflix.appinfo.PropertyBasedInstanceConfigConstants.*;
  * to <em>eureka-client.properties</em>.
  * </p>
  *
- * @author Karthik Ranganathan
+ * Eureka 基于配置文件的应用对象配置抽象基类
  *
+ * @author Karthik Ranganathan
  */
 public abstract class PropertiesInstanceConfig extends AbstractInstanceConfig implements EurekaInstanceConfig {
 
+    /**
+     * 命名空间
+     */
     protected final String namespace;
+    /**
+     * 配置文件对象
+     */
     protected final DynamicPropertyFactory configInstance;
+    /**
+     * 应用分组
+     * 从 环境变量 获取
+     */
     private String appGrpNameFromEnv;
 
     public PropertiesInstanceConfig() {
@@ -69,14 +80,14 @@ public abstract class PropertiesInstanceConfig extends AbstractInstanceConfig im
 
     public PropertiesInstanceConfig(String namespace, DataCenterInfo info) {
         super(info);
-
+        // 设置 namespace，为 "." 结尾
         this.namespace = namespace.endsWith(".")
                 ? namespace
                 : namespace + ".";
-
+        // 从 环境变量 获取 应用分组
         appGrpNameFromEnv = ConfigurationManager.getConfigInstance()
                 .getString(FALLBACK_APP_GROUP_KEY, Values.UNKNOWN_APPLICATION);
-
+        // 初始化 配置文件对象
         this.configInstance = Archaius1Utils.initConfig(CommonConstants.CONFIG_FILE_NAME);
     }
 

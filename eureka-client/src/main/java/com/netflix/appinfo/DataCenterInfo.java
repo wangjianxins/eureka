@@ -24,7 +24,8 @@ import com.netflix.discovery.converters.jackson.DataCenterTypeInfoResolver;
 
 /**
  * A simple interface for indicating which <em>datacenter</em> a particular instance belongs.
- *
+ * <p>
+ * 数据中心信息接口，标记所属数据中心名
  *
  * @author Karthik Ranganathan
  */
@@ -33,7 +34,17 @@ import com.netflix.discovery.converters.jackson.DataCenterTypeInfoResolver;
 @JsonTypeIdResolver(DataCenterTypeInfoResolver.class)
 public interface DataCenterInfo {
 
-    enum Name {Netflix, Amazon, MyOwn}
+    /**
+     * 数据中心名枚举
+     */
+    enum Name {
+        Netflix,
+        Amazon,
+        MyOwn
+    }
 
+    /**
+     * @return 归属的数据中心名
+     */
     Name getName();
 }

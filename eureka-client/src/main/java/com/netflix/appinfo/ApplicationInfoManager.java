@@ -16,16 +16,17 @@
 
 package com.netflix.appinfo;
 
+import com.netflix.appinfo.InstanceInfo.InstanceStatus;
+import com.netflix.appinfo.providers.EurekaConfigBasedInstanceInfoProvider;
+import com.netflix.discovery.StatusChangeEvent;
+import com.netflix.yunai.Done;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import com.netflix.appinfo.InstanceInfo.InstanceStatus;
-import com.netflix.appinfo.providers.EurekaConfigBasedInstanceInfoProvider;
-import com.netflix.discovery.StatusChangeEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The class that initializes information required for registration with
@@ -45,6 +46,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 @Singleton
+@Done
 public class ApplicationInfoManager {
     private static final Logger logger = LoggerFactory.getLogger(ApplicationInfoManager.class);
 

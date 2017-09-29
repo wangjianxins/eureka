@@ -1,14 +1,5 @@
 package com.netflix.eureka.resources;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.regex.Pattern;
-
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.InstanceStatus;
 import com.netflix.discovery.shared.resolver.DefaultEndpoint;
@@ -30,10 +21,16 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Pattern;
+
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -75,11 +72,11 @@ public class EurekaClientServerRestIntegrationTest {
 
         httpClientFactory = JerseyEurekaHttpClientFactory.newBuilder()
                 .withClientName("testEurekaClient")
-                .withConnectionTimeout(1000)
-                .withReadTimeout(1000)
+                .withConnectionTimeout((Integer.MAX_VALUE)) // TODO 芋艿，原始 1000
+                .withReadTimeout(Integer.MAX_VALUE) // TODO 芋艿，原始 1000
                 .withMaxConnectionsPerHost(1)
                 .withMaxTotalConnections(1)
-                .withConnectionIdleTimeout(1000)
+                .withConnectionIdleTimeout((Integer.MAX_VALUE))
                 .build();
 
         jerseyEurekaClient = httpClientFactory.newClient(new DefaultEndpoint(eurekaServiceUrl));
@@ -90,6 +87,8 @@ public class EurekaClientServerRestIntegrationTest {
                 serverCodecs,
                 eurekaServiceUrl
         );
+
+        Thread.sleep(Long.MAX_VALUE);
     }
 
     @AfterClass
@@ -231,16 +230,47 @@ public class EurekaClientServerRestIntegrationTest {
 
     }
 
-    private static void startServer() throws Exception {
-        File warFile = findWar();
+    // TODO 疑问，芋艿，临时注释，看看情况。
+//    private static void startServer() throws Exception {
+//        File warFile = findWar();
+//
+//        server = new Server(8080);
+//
+//        WebAppContext webapp = new WebAppContext();
+//        webapp.setContextPath("/");
+//        webapp.setWar(warFile.getAbsolutePath());
+//        server.setHandler(webapp);
+//
+//        server.start();
+//
+//        eurekaServiceUrl = "http://localhost:8080/v2";
+//    }
 
+//    public static final String DEFAULT_CONTEXT_PATH = "/jetty-embeded-webapp";
+    private static final String DEFAULT_APP_CONTEXT_PATH = "src/main/webapp";
+
+    private static void startServer() throws Exception {
         server = new Server(8080);
 
-        WebAppContext webapp = new WebAppContext();
-        webapp.setContextPath("/");
-        webapp.setWar(warFile.getAbsolutePath());
-        server.setHandler(webapp);
+//        ServletContextHandler handler = new ServletContextHandler();
+//        handler.addEventListener(new EurekaBootStrap());
+//        handler.addFilter(ServerRequestAuthFilter.class, "/*", 1).setFilter(new ServerRequestAuthFilter());
+//        handler.addFilter(RateLimitingFilter.class, "/*", 1).setFilter(new RateLimitingFilter());
+//        ServletContainer jersey = new ServletContainer();
+//        handler.addFilter(ServletContainer.class, "/*", 1).setFilter(jersey);
+//
+//        handler.setServer(server);
+//
+//        handler.start();
 
+        // TODO Thread.currentThread().getContextClassLoader() 获取不到路径，先暂时这样；
+        WebAppContext webAppCtx = new WebAppContext(new File("./eureka-server/src/main/webapp").getAbsolutePath(), "/");
+        webAppCtx.setDescriptor(new File("./eureka-server/src/main/webapp/WEB-INF/web.xml").getAbsolutePath());
+        webAppCtx.setResourceBase(new File("./eureka-server/src/main/resources").getAbsolutePath());
+        webAppCtx.setClassLoader(Thread.currentThread().getContextClassLoader());
+        server.setHandler(webAppCtx);
+
+//        server.setHandler(handler);
         server.start();
 
         eurekaServiceUrl = "http://localhost:8080/v2";

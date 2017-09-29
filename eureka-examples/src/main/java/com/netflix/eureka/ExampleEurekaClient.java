@@ -16,14 +16,6 @@
 
 package com.netflix.eureka;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.util.Date;
-
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.InstanceInfo;
@@ -33,6 +25,16 @@ import com.netflix.discovery.DefaultEurekaClientConfig;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Date;
 
 /**
  * Sample Eureka client that discovers the example service using Eureka and sends requests.
@@ -114,7 +116,10 @@ public class ExampleEurekaClient {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnknownHostException {
+
+        injectEurekaConfiguration();
+
         ExampleEurekaClient sampleClient = new ExampleEurekaClient();
 
         // create the client
@@ -127,6 +132,31 @@ public class ExampleEurekaClient {
 
         // shutdown the client
         eurekaClient.shutdown();
+    }
+
+
+    private static void injectEurekaConfiguration() throws UnknownHostException {
+        String myHostName = InetAddress.getLocalHost().getHostName();
+        String myServiceUrl = "http://" + myHostName + ":8080/v2/";
+
+        System.setProperty("eureka.region", "default");
+        System.setProperty("eureka.name", "eureka");
+        System.setProperty("eureka.vipAddress", "eureka.mydomain.net");
+        System.setProperty("eureka.port", "8080");
+        System.setProperty("eureka.preferSameZone", "false");
+        System.setProperty("eureka.shouldUseDns", "false");
+        System.setProperty("eureka.shouldFetchRegistry", "false");
+        System.setProperty("eureka.serviceUrl.defaultZone", myServiceUrl);
+        System.setProperty("eureka.serviceUrl.default.defaultZone", myServiceUrl);
+        System.setProperty("eureka.awsAccessId", "fake_aws_access_id");
+        System.setProperty("eureka.awsSecretKey", "fake_aws_secret_key");
+        System.setProperty("eureka.numberRegistrySyncRetries", "0");
+
+
+
+
+//        ConfigurationManager.getConfigInstance().setProperty("eureka.environment", "production");
+        System.setProperty("eureka.environment", "production");
     }
 
 }
