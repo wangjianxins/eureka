@@ -1,16 +1,18 @@
 package com.netflix.discovery.providers;
 
-import javax.inject.Provider;
-
 import com.google.inject.Inject;
 import com.netflix.discovery.DefaultEurekaClientConfig;
 import com.netflix.discovery.DiscoveryManager;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.EurekaNamespace;
 
+import javax.inject.Provider;
+
 /**
  * This provider is necessary because the namespace is optional.
  * @author elandau
+ *
+ * 创建 DefaultEurekaClientConfig 的工厂
  */
 public class DefaultEurekaClientConfigProvider implements Provider<EurekaClientConfig> {
 

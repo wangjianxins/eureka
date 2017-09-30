@@ -141,7 +141,8 @@ public class ExampleEurekaClient {
 
         System.setProperty("eureka.region", "default");
         System.setProperty("eureka.name", "eureka");
-        System.setProperty("eureka.vipAddress", "eureka.mydomain.net");
+//        System.setProperty("eureka.vipAddress", "eureka.mydomain.net");
+        System.setProperty("eureka.vipAddress", "${eureka}.eureka.mydomain.net");
         System.setProperty("eureka.port", "8080");
         System.setProperty("eureka.preferSameZone", "false");
         System.setProperty("eureka.shouldUseDns", "false");
@@ -156,7 +157,7 @@ public class ExampleEurekaClient {
 
 
 //        ConfigurationManager.getConfigInstance().setProperty("eureka.environment", "production");
-        System.setProperty("eureka.environment", "production");
+        System.setProperty("eureka", "production");
     }
 
 }

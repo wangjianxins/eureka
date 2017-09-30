@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * {@link AbstractInstanceConfig}.
  * </p>
  *
+ * 应用对象信息管理器
  *
  * @author Karthik Ranganathan, Greg Kim
  *
@@ -48,6 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Singleton
 @Done
 public class ApplicationInfoManager {
+
     private static final Logger logger = LoggerFactory.getLogger(ApplicationInfoManager.class);
 
     private static final InstanceStatusMapper NO_OP_MAPPER = new InstanceStatusMapper() {
@@ -57,12 +59,26 @@ public class ApplicationInfoManager {
         }
     };
 
+    /**
+     * 单例
+     */
     private static ApplicationInfoManager instance = new ApplicationInfoManager(null, null, null);
 
+    /**
+     * 状态变更监听器
+     */
     protected final Map<String, StatusChangeListener> listeners;
+    /**
+     * 应用对象状态匹配
+     */
     private final InstanceStatusMapper instanceStatusMapper;
-
+    /**
+     * 应用对象信息
+     */
     private InstanceInfo instanceInfo;
+    /**
+     * 应用对象配置
+     */
     private EurekaInstanceConfig config;
 
     public static class OptionalArgs {

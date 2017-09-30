@@ -15,15 +15,6 @@
  */
 package com.netflix.appinfo;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -41,6 +32,10 @@ import com.thoughtworks.xstream.annotations.XStreamOmitField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+
 /**
  * The class that holds information required for registration with
  * <tt>Eureka Server</tt> and to be discovered by other components.
@@ -48,6 +43,8 @@ import org.slf4j.LoggerFactory;
  * <code>@Auto</code> annotated fields are serialized as is; Other fields are
  * serialized as specified by the <code>@Serializer</code>.
  * </p>
+ *
+ * 应用对象信息
  *
  * @author Karthik Ranganathan, Greg Kim
  */
@@ -88,20 +85,36 @@ public class InstanceInfo {
     public static final int DEFAULT_SECURE_PORT = 7002;
     public static final int DEFAULT_COUNTRY_ID = 1; // US
 
+    /**
+     * 对象编号
+     */
     // The (fixed) instanceId for this instanceInfo. This should be unique within the scope of the appName.
     private volatile String instanceId;
-
+    /**
+     * 应用名
+     */
     private volatile String appName;
+    /**
+     * 应用分组
+     */
     @Auto
     private volatile String appGroupName;
-
+    /**
+     * IP 地址
+     */
     private volatile String ipAddr;
 
     private static final String SID_DEFAULT = "na";
     @Deprecated
     private volatile String sid = SID_DEFAULT;
 
+    /**
+     * 应用 http 端口
+     */
     private volatile int port = DEFAULT_PORT;
+    /**
+     * 应用 https 端口
+     */
     private volatile int securePort = DEFAULT_SECURE_PORT;
 
     @Auto
@@ -112,8 +125,14 @@ public class InstanceInfo {
     private volatile String healthCheckUrl;
     @Auto
     private volatile String secureHealthCheckUrl;
+    /**
+     * 虚拟主机名
+     */
     @Auto
     private volatile String vipAddress;
+    /**
+     * 虚拟安全主机名
+     */
     @Auto
     private volatile String secureVipAddress;
     @XStreamOmitField
@@ -132,17 +151,38 @@ public class InstanceInfo {
     private String healthCheckExplicitUrl;
     @Deprecated
     private volatile int countryId = DEFAULT_COUNTRY_ID; // Defaults to US
+    /**
+     * 应用 https 端口是否开启
+     */
     private volatile boolean isSecurePortEnabled = false;
+    /**
+     * 应用 http 端口是否开启
+     */
     private volatile boolean isUnsecurePortEnabled = true;
+    /**
+     * 数据中心信息
+     */
     private volatile DataCenterInfo dataCenterInfo;
+    /**
+     * 主机名
+     */
     private volatile String hostName;
+
     private volatile InstanceStatus status = InstanceStatus.UP;
+
     private volatile InstanceStatus overriddenstatus = InstanceStatus.UNKNOWN;
+
     @XStreamOmitField
     private volatile boolean isInstanceInfoDirty = false;
+    /**
+     * 租约信息
+     */
     private volatile LeaseInfo leaseInfo;
     @Auto
     private volatile Boolean isCoordinatingDiscoveryServer = Boolean.FALSE;
+    /**
+     * 元数据( Metadata )集合
+     */
     @XStreamAlias("metadata")
     private volatile Map<String, String> metadata;
     @Auto
@@ -415,12 +455,12 @@ public class InstanceInfo {
             result.appName = intern.apply(appName.toUpperCase(Locale.ROOT));
             return this;
         }
-        
+
         public Builder setAppNameForDeser(String appName) {
             result.appName = appName;
             return this;
         }
-        
+
 
         public Builder setAppGroupName(String appGroupName) {
             if (appGroupName != null) {
@@ -448,13 +488,12 @@ public class InstanceInfo {
                 logger.warn("Passed in hostname is blank, not setting it");
                 return this;
             }
-
             String existingHostName = result.hostName;
             result.hostName = hostName;
             if ((existingHostName != null)
                     && !(hostName.equals(existingHostName))) {
                 refreshStatusPageUrl().refreshHealthCheckUrl()
-                        .refreshVIPAddress().refreshSecureVIPAddress();
+                    .refreshVIPAddress().refreshSecureVIPAddress();
             }
             return this;
         }

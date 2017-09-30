@@ -3,6 +3,8 @@ package com.netflix.discovery;
 /**
  * constants pertaining to property based client configs
  *
+ * {@link DefaultEurekaClientConfig} 属性键
+ *
  * @author David Liu
  */
 final class PropertyBasedClientConfigConstants {

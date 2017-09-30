@@ -16,12 +16,6 @@
 
 package com.netflix.discovery;
 
-import javax.annotation.Nullable;
-import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import com.google.inject.ProvidedBy;
 import com.netflix.appinfo.EurekaAccept;
 import com.netflix.config.DynamicPropertyFactory;
@@ -30,6 +24,12 @@ import com.netflix.discovery.internal.util.Archaius1Utils;
 import com.netflix.discovery.providers.DefaultEurekaClientConfigProvider;
 import com.netflix.discovery.shared.transport.DefaultEurekaTransportConfig;
 import com.netflix.discovery.shared.transport.EurekaTransportConfig;
+
+import javax.annotation.Nullable;
+import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static com.netflix.discovery.PropertyBasedClientConfigConstants.*;
 
@@ -55,6 +55,7 @@ import static com.netflix.discovery.PropertyBasedClientConfigConstants.*;
  *
  * @author Karthik Ranganathan
  *
+ * 基于配置文件的 Eureka-Client 配置实现类
  */
 @Singleton
 @ProvidedBy(DefaultEurekaClientConfigProvider.class)
@@ -65,10 +66,20 @@ public class DefaultEurekaClientConfig implements EurekaClientConfig {
      */
     @Deprecated
     public static final String DEFAULT_NAMESPACE = CommonConstants.DEFAULT_CONFIG_NAMESPACE + ".";
+
     public static final String DEFAULT_ZONE = "defaultZone";
 
+    /**
+     * 命名空间
+     */
     private final String namespace;
+    /**
+     * 配置文件对象
+     */
     private final DynamicPropertyFactory configInstance;
+    /**
+     * HTTP 传输配置
+     */
     private final EurekaTransportConfig transportConfig;
 
     public DefaultEurekaClientConfig() {
@@ -76,11 +87,13 @@ public class DefaultEurekaClientConfig implements EurekaClientConfig {
     }
 
     public DefaultEurekaClientConfig(String namespace) {
+        // 设置 namespace，为 "." 结尾
         this.namespace = namespace.endsWith(".")
                 ? namespace
                 : namespace + ".";
-
+        // 初始化 配置文件对象
         this.configInstance = Archaius1Utils.initConfig(CommonConstants.CONFIG_FILE_NAME);
+        // 创建 HTTP 传输配置
         this.transportConfig = new DefaultEurekaTransportConfig(namespace, configInstance);
     }
 
@@ -320,10 +333,10 @@ public class DefaultEurekaClientConfig implements EurekaClientConfig {
     }
 
     /*
-         * (non-Javadoc)
-         *
-         * @see com.netflix.discovery.EurekaClientConfig#shouldLogDeltaDiff()
-         */
+     * (non-Javadoc)
+     *
+     * @see com.netflix.discovery.EurekaClientConfig#shouldLogDeltaDiff()
+     */
     @Override
     public boolean shouldLogDeltaDiff() {
         return configInstance.getBooleanProperty(

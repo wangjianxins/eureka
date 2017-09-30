@@ -18,9 +18,8 @@ public class Archaius1VipAddressResolver implements VipAddressResolver {
         if (vipAddressMacro == null) {
             return null;
         }
-
         String result = vipAddressMacro;
-
+        // 替换表达式
         Matcher matcher = VIP_ATTRIBUTES_PATTERN.matcher(result);
         while (matcher.find()) {
             String key = matcher.group(1);
@@ -30,6 +29,7 @@ public class Archaius1VipAddressResolver implements VipAddressResolver {
             logger.debug(", att key:" + key);
             logger.debug(", att value:" + value);
             logger.debug("");
+
             result = result.replaceAll("\\$\\{" + key + "\\}", value);
             matcher = VIP_ATTRIBUTES_PATTERN.matcher(result);
         }

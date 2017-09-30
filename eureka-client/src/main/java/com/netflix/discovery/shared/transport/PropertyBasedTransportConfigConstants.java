@@ -24,10 +24,10 @@ final class PropertyBasedTransportConfigConstants {
 
 
     static class Values {
-        static final int SESSION_RECONNECT_INTERVAL = 20*60;
+        static final int SESSION_RECONNECT_INTERVAL = 20 * 60;
         static final double QUARANTINE_REFRESH_PERCENTAGE = 0.66;
-        static final int DATA_STALENESS_TRHESHOLD = 5*60;
-        static final int ASYNC_RESOLVER_REFRESH_INTERVAL = 5*60*1000;
+        static final int DATA_STALENESS_TRHESHOLD = 5 * 60;
+        static final int ASYNC_RESOLVER_REFRESH_INTERVAL = 5 * 60 * 1000;
         static final int ASYNC_RESOLVER_WARMUP_TIMEOUT = 5000;
         static final int ASYNC_EXECUTOR_THREADPOOL_SIZE = 5;
     }
