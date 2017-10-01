@@ -31,6 +31,7 @@ import com.netflix.discovery.shared.Applications;
  *
  * @author Karthik Ranganathan
  *
+ * 备份注册中心接口
  */
 @ImplementedBy(NotImplementedRegistryImpl.class)
 public interface BackupRegistry {

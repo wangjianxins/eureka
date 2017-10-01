@@ -2,6 +2,8 @@ package com.netflix.appinfo;
 
 /**
  * @author Nitesh Kant
+ *
+ * 将 HealthCheckCallback 桥接成 HealthCheckHandler
  */
 @SuppressWarnings("deprecation")
 public class HealthCheckCallbackToHandlerBridge implements HealthCheckHandler {
@@ -25,4 +27,5 @@ public class HealthCheckCallbackToHandlerBridge implements HealthCheckHandler {
 
         return callback.isHealthy() ? InstanceInfo.InstanceStatus.UP : InstanceInfo.InstanceStatus.DOWN;
     }
+
 }

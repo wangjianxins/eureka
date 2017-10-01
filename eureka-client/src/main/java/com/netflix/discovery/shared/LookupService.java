@@ -15,16 +15,15 @@
  */
 package com.netflix.discovery.shared;
 
-import java.util.List;
-
 import com.netflix.appinfo.InstanceInfo;
+
+import java.util.List;
 
 /**
  * Lookup service for finding active instances.
  *
  * @author Karthik Ranganathan, Greg Kim.
  * @param <T> for backward compatibility
-
  */
 public interface LookupService<T> {
 

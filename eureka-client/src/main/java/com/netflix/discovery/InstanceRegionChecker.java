@@ -1,21 +1,26 @@
 package com.netflix.discovery;
 
-import javax.annotation.Nullable;
-import java.util.Map;
-
 import com.netflix.appinfo.AmazonInfo;
 import com.netflix.appinfo.DataCenterInfo;
 import com.netflix.appinfo.InstanceInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+import java.util.Map;
+
 /**
+ * 应用对象信息区域( region )校验
+ *
  * @author Nitesh Kant
  */
 public class InstanceRegionChecker {
     private static Logger logger = LoggerFactory.getLogger(InstanceRegionChecker.class);
 
     private final AzToRegionMapper azToRegionMapper;
+    /**
+     * 本地区域( Region )
+     */
     private final String localRegion;
 
     InstanceRegionChecker(AzToRegionMapper azToRegionMapper, String localRegion) {
