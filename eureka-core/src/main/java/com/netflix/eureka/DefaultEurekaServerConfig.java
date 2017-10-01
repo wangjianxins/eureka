@@ -16,25 +16,15 @@
 
 package com.netflix.eureka;
 
-import javax.annotation.Nullable;
-import javax.inject.Singleton;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import com.netflix.config.ConfigurationManager;
-import com.netflix.config.DynamicBooleanProperty;
-import com.netflix.config.DynamicIntProperty;
-import com.netflix.config.DynamicPropertyFactory;
-import com.netflix.config.DynamicStringProperty;
-import com.netflix.config.DynamicStringSetProperty;
+import com.netflix.config.*;
 import com.netflix.eureka.aws.AwsBindingStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import javax.inject.Singleton;
+import java.io.IOException;
+import java.util.*;
 
 /**
  *
@@ -61,6 +51,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 public class DefaultEurekaServerConfig implements EurekaServerConfig {
+
     private static final String ARCHAIUS_DEPLOYMENT_ENVIRONMENT = "archaius.deployment.environment";
     private static final String TEST = "test";
     private static final String EUREKA_ENVIRONMENT = "eureka.environment";
@@ -79,6 +70,7 @@ public class DefaultEurekaServerConfig implements EurekaServerConfig {
     // properties would be too costly.
     private final DynamicStringSetProperty rateLimiterPrivilegedClients =
             new DynamicStringSetProperty(namespace + "rateLimiter.privilegedClients", Collections.<String>emptySet());
+
     private final DynamicBooleanProperty rateLimiterEnabled = configInstance.getBooleanProperty(namespace + "rateLimiter.enabled", false);
     private final DynamicBooleanProperty rateLimiterThrottleStandardClients = configInstance.getBooleanProperty(namespace + "rateLimiter.throttleStandardClients", false);
     private final DynamicIntProperty rateLimiterBurstSize = configInstance.getIntProperty(namespace + "rateLimiter.burstSize", 10);
@@ -497,8 +489,7 @@ public class DefaultEurekaServerConfig implements EurekaServerConfig {
             if (pairSplit.length < 2) {
                 logger.error("Error reading eureka remote region urls from property {}. "
                                 + "Invalid entry {} for remote region url. The entry must contain region name and url "
-                                + "separated by a {}. Ignoring this entry.",
-                        new String[]{propName, remoteRegionUrlWithNamePair, pairSplitChar});
+                                + "separated by a {}. Ignoring this entry.", new String[]{propName, remoteRegionUrlWithNamePair, pairSplitChar});
             } else {
                 String regionName = pairSplit[0];
                 String regionUrl = pairSplit[1];

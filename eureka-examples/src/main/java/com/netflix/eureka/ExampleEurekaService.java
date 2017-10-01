@@ -28,6 +28,9 @@ import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.discovery.DefaultEurekaClientConfig;
 import com.netflix.discovery.EurekaClientConfig;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 /**
  * Sample Eureka service that registers with Eureka to receive and process requests.
  * This example just receives one request and exits once it receives the request after processing it.
@@ -56,7 +59,9 @@ public class ExampleEurekaService {
     }
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnknownHostException {
+
+        injectEurekaConfiguration();
 
         DynamicPropertyFactory configInstance = com.netflix.config.DynamicPropertyFactory.getInstance();
         ApplicationInfoManager applicationInfoManager = initializeApplicationInfoManager(new MyDataCenterInstanceConfig());
@@ -69,5 +74,31 @@ public class ExampleEurekaService {
             // the stop calls shutdown on eurekaClient
             exampleServiceBase.stop();
         }
+    }
+
+    private static void injectEurekaConfiguration() throws UnknownHostException {
+        String myHostName = InetAddress.getLocalHost().getHostName();
+        String myServiceUrl = "http://" + myHostName + ":8080/v2/";
+
+        System.setProperty("eureka.region", "default");
+        System.setProperty("eureka.name", "eureka");
+        System.setProperty("eureka.vipAddress", "eureka.mydomain.net");
+//        System.setProperty("eureka.vipAddress", "${eureka}.eureka.mydomain.net");
+        System.setProperty("eureka.port", "8081");
+        System.setProperty("eureka.preferSameZone", "false");
+        System.setProperty("eureka.shouldUseDns", "false");
+        System.setProperty("eureka.shouldFetchRegistry", "true");
+//        System.setProperty("eureka.shouldFetchRegistry", "false");
+        System.setProperty("eureka.serviceUrl.defaultZone", myServiceUrl);
+        System.setProperty("eureka.serviceUrl.default.defaultZone", myServiceUrl);
+        System.setProperty("eureka.awsAccessId", "fake_aws_access_id");
+        System.setProperty("eureka.awsSecretKey", "fake_aws_secret_key");
+        System.setProperty("eureka.numberRegistrySyncRetries", "0");
+
+
+
+
+//        ConfigurationManager.getConfigInstance().setProperty("eureka.environment", "production");
+//        System.setProperty("eureka", "production");
     }
 }

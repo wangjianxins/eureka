@@ -43,6 +43,8 @@ public interface EurekaServerConfig {
      * <em>Elastic IP Biding</em>. The access id should be provided with
      * appropriate AWS permissions to bind the EIP.
      *
+     * 跳过：AWS 使用
+     *
      * @return
      */
     String getAWSAccessId();
@@ -51,6 +53,8 @@ public interface EurekaServerConfig {
      * Gets the <em>AWS Secret Key</em>. This is primarily used for
      * <em>Elastic IP Biding</em>. The access id should be provided with
      * appropriate AWS permissions to bind the EIP.
+     *
+     * 跳过：AWS 使用
      *
      * @return
      */
@@ -63,6 +67,8 @@ public interface EurekaServerConfig {
      * <p>
      * <em>The changes are effective at runtime.</em>
      * </p>
+     *
+     * 跳过：AWS 使用
      *
      * @return the number of times the server should try to bind to the
      *         candidate EIP.
@@ -77,6 +83,8 @@ public interface EurekaServerConfig {
      * <em>The changes are effective at runtime.</em>
      * </p>
      *
+     * 跳过：AWS 使用
+     *
      * @return the time in milliseconds.
      */
     int getEIPBindingRetryIntervalMsWhenUnbound();
@@ -88,6 +96,8 @@ public interface EurekaServerConfig {
      * <p>
      * <em>The changes are effective at runtime.</em>
      * </p>
+     *
+     * 跳过：AWS 使用
      *
      * @return the time in milliseconds.
      */
@@ -150,6 +160,8 @@ public interface EurekaServerConfig {
     /**
      * If set to true, the replicated data send in the request will be always compressed.
      * This does not define response path, which is driven by "Accept-Encoding" header.
+     *
+     * 是否开启 Eureka-Server 集群间请求压缩
      */
     boolean shouldEnableReplicatedRequestCompression();
 
@@ -162,6 +174,7 @@ public interface EurekaServerConfig {
      *
      * @return the number of retries.
      */
+    @Deprecated
     int getNumberOfReplicationRetries();
 
     /**
@@ -173,6 +186,7 @@ public interface EurekaServerConfig {
      *
      * @return time in milliseconds indicating the interval.
      */
+    @Deprecated
     int getPeerEurekaStatusRefreshTimeIntervalMs();
 
     /**
@@ -193,6 +207,8 @@ public interface EurekaServerConfig {
      * Gets the timeout value for connecting to peer eureka nodes for
      * replication.
      *
+     * 【复制】远程 Eureka-Server 请求连接超时时间，单位：毫秒
+     *
      * @return timeout value in milliseconds.
      */
     int getPeerNodeConnectTimeoutMs();
@@ -200,6 +216,8 @@ public interface EurekaServerConfig {
     /**
      * Gets the timeout value for reading information from peer eureka nodes for
      * replication.
+     *
+     * 【复制】远程 Eureka-Server 请求读取超时时间，单位：毫秒
      *
      * @return timeout value in milliseconds.
      */
@@ -209,6 +227,8 @@ public interface EurekaServerConfig {
      * Gets the total number of <em>HTTP</em> connections allowed to peer eureka
      * nodes for replication.
      *
+     * 【复制】全部远程 Eureka-Server 请求总连接数
+     *
      * @return total number of allowed <em>HTTP</em> connections.
      */
     int getPeerNodeTotalConnections();
@@ -216,6 +236,8 @@ public interface EurekaServerConfig {
     /**
      * Gets the total number of <em>HTTP</em> connections allowed to a
      * particular peer eureka node for replication.
+     *
+     * 【复制】单个远程 Eureka-Server 请求总连接数
      *
      * @return total number of allowed <em>HTTP</em> connections for a peer
      *         node.
@@ -225,6 +247,8 @@ public interface EurekaServerConfig {
     /**
      * Gets the idle time after which the <em>HTTP</em> connection should be
      * cleaned up.
+     *
+     * 【复制】远程 Eureka-Server 请求空闲超时时间，单位：毫秒
      *
      * @return idle time in seconds.
      */
@@ -258,6 +282,8 @@ public interface EurekaServerConfig {
      * Get the timeout value for querying the <em>AWS</em> for <em>ASG</em>
      * information.
      *
+     * 跳过：AWS 使用
+     *
      * @return timeout value in milliseconds.
      */
     int getASGQueryTimeoutMs();
@@ -266,12 +292,16 @@ public interface EurekaServerConfig {
      * Get the time interval with which the <em>ASG</em> information must be
      * queried from <em>AWS</em>.
      *
+     * 跳过：AWS 使用
+     *
      * @return time in milliseconds.
      */
     long getASGUpdateIntervalMs();
 
     /**
      * Get the expiration value for the cached <em>ASG</em> information
+     *
+     * 跳过：AWS 使用
      *
      * @return time in milliseconds.
      */
@@ -308,6 +338,8 @@ public interface EurekaServerConfig {
      * <em>The changes are effective at runtime.</em>
      * </p>
      *
+     * // TODO 芋艿：后面研究
+     *
      * @return true if the delta information is allowed to be served, false
      *         otherwise.
      */
@@ -319,6 +351,7 @@ public interface EurekaServerConfig {
      *
      * @return time in minutes.
      */
+    @Deprecated
     long getMaxIdleThreadInMinutesAgeForStatusReplication();
 
     /**
@@ -326,6 +359,7 @@ public interface EurekaServerConfig {
      *
      * @return minimum number of threads to be used for status replication.
      */
+    @Deprecated
     int getMinThreadsForStatusReplication();
 
     /**
@@ -362,6 +396,8 @@ public interface EurekaServerConfig {
      * Get the number of times that a eureka node would try to get the registry
      * information from the peers during startup.
      *
+     * Eureka-Server 启动时，从远程 Eureka-Server 读取失败重试次数。
+     *
      * @return the number of retries
      */
     int getRegistrySyncRetries();
@@ -369,6 +405,8 @@ public interface EurekaServerConfig {
     /**
      * Get the wait/sleep time between each retry sync attempts, if the prev retry failed and there are
      * more retries to attempt.
+     *
+     * Eureka-Server 启动时，从远程 Eureka-Server 读取失败等待( sleep )间隔，单位：毫秒。
      *
      * @return the wait time in ms between each sync retries
      */
@@ -393,6 +431,7 @@ public interface EurekaServerConfig {
      *
      * @return time in minutes.
      */
+    @Deprecated
     long getMaxIdleThreadAgeInMinutesForPeerReplication();
 
     /**
@@ -400,6 +439,7 @@ public interface EurekaServerConfig {
      *
      * @return minimum number of threads to be used for replication.
      */
+    @Deprecated // 只有单元测试使用
     int getMinThreadsForPeerReplication();
 
     /**
@@ -418,7 +458,9 @@ public interface EurekaServerConfig {
      * The default value of -1 is interpreted as a marker to not compare
      * the number of replicas. This would be done to either disable this check
      * or to run eureka in a single node configuration.
-     * 
+     *
+     * 跳过：AWS 使用
+     *
      * @return minimum number of available peer replication instances
      *         for this instance to be considered healthy.
      */
@@ -436,6 +478,8 @@ public interface EurekaServerConfig {
      * Checks whether the connections to replicas should be primed. In AWS, the
      * firewall requires sometime to establish network connection for new nodes.
      *
+     * 跳过：AWS 使用
+     *
      * @return true, if connections should be primed, false otherwise.
      */
     boolean shouldPrimeAwsReplicaConnections();
@@ -447,6 +491,8 @@ public interface EurekaServerConfig {
      * <em>The changes are effective at runtime.</em>
      * </p>
      *
+     * // TODO 芋艿：后面研究
+     *
      * @return true if the delta information is allowed to be served, false
      *         otherwise.
      */
@@ -456,6 +502,8 @@ public interface EurekaServerConfig {
      * Gets the timeout value for connecting to peer eureka nodes for remote
      * regions.
      *
+     * 【读取】远程 Eureka-Server 请求连接超时时间，单位：毫秒
+     *
      * @return timeout value in milliseconds.
      */
     int getRemoteRegionConnectTimeoutMs();
@@ -463,6 +511,8 @@ public interface EurekaServerConfig {
     /**
      * Gets the timeout value for reading information from peer eureka nodes for
      * remote regions.
+     *
+     * 【读取】远程 Eureka-Server 请求读取超时时间，单位：毫秒
      *
      * @return timeout value in milliseconds.
      */
@@ -472,14 +522,17 @@ public interface EurekaServerConfig {
      * Gets the total number of <em>HTTP</em> connections allowed to peer eureka
      * nodes for remote regions.
      *
+     * 【读取】所有远程 Eureka-Server 请求总连接数
+     *
      * @return total number of allowed <em>HTTP</em> connections.
      */
-
     int getRemoteRegionTotalConnections();
 
     /**
      * Gets the total number of <em>HTTP</em> connections allowed to a
      * particular peer eureka node for remote regions.
+     *
+     * 【读取】单个远程 Eureka-Server 请求总连接数
      *
      * @return total number of allowed <em>HTTP</em> connections for a peer
      *         node.
@@ -489,6 +542,8 @@ public interface EurekaServerConfig {
     /**
      * Gets the idle time after which the <em>HTTP</em> connection should be
      * cleaned up for remote regions.
+     *
+     * 【读取】远程 Eureka-Server 请求空闲超时时间，单位：毫秒
      *
      * @return idle time in seconds.
      */
@@ -500,12 +555,18 @@ public interface EurekaServerConfig {
      * registry information from the eureka server is compressed for optimum
      * network traffic.
      *
+     * 是否 GZIP 解压 从远程 Eureka-Server 的内容
+     *
      * @return true, if the content need to be compressed, false otherwise.
      */
     boolean shouldGZipContentFromRemoteRegion();
 
     /**
      * Get a map of region name against remote region discovery url.
+     *
+     * 远程 Eureka-Server 映射
+     * key：Eureka-Server 名
+     * value：Eureka-Server 地址
      *
      * @return - An unmodifiable map of remote region name against remote region discovery url. Empty map if no remote
      * region url is defined.
@@ -517,6 +578,7 @@ public interface EurekaServerConfig {
      * @return - array of string representing {@link java.net.URL}s.
      * @deprecated Use {@link #getRemoteRegionUrlsWithName()}
      */
+    @Deprecated
     String[] getRemoteRegionUrls();
 
     /**
@@ -538,23 +600,33 @@ public interface EurekaServerConfig {
     /**
      * Get the time interval for which the registry information need to be fetched from the remote region.
      * @return time in seconds.
+     *
+     * 远程 Eureka-Server 拉取注册信息的间隔，单位：秒
      */
     int getRemoteRegionRegistryFetchInterval();
 
     /**
      * Size of a thread pool used to execute remote region registry fetch requests. Delegating these requests
      * to internal threads is necessary workaround to https://bugs.openjdk.java.net/browse/JDK-8049846 bug.
+     *
+     * 远程 Eureka-Server 拉取注册信息的线程池大小
      */
     int getRemoteRegionFetchThreadPoolSize();
 
     /**
      * Gets the fully qualified trust store file that will be used for remote region registry fetches.
+     *
+     * 远程 Eureka-Server 信任存储文件
+     *
      * @return
      */
     String getRemoteRegionTrustStore();
 
     /**
      * Get the remote region trust store's password.
+     *
+     * 远程 Eureka-Server 信任存储文件的密码
+     *
      */
     String getRemoteRegionTrustStorePassword();
 
@@ -570,70 +642,102 @@ public interface EurekaServerConfig {
      * Indicates whether the replication between cluster nodes should be batched for network efficiency.
      * @return {@code true} if the replication needs to be batched.
      */
+    @Deprecated // 只有单元测试里面用到
     boolean shouldBatchReplication();
 
     /**
      * Indicates whether the eureka server should log/metric clientAuthHeaders
+     *
+     * 打印访问的客户端名和版本号，配合 Netflix Servo 实现监控信息采集。
+     *
      * @return {@code true} if the clientAuthHeaders should be logged and/or emitted as metrics
      */
     boolean shouldLogIdentityHeaders();
 
     /**
      * Indicates whether the rate limiter should be enabled or disabled.
+     *
+     * 请求限流是否开启
      */
     boolean isRateLimiterEnabled();
 
     /**
      * Indicate if rate limit standard clients. If set to false, only non standard clients
      * will be rate limited.
+     *
+     * 是否限制非标准客户端的访问。
+     *
+     * 标准客户端通过请求头( header )的 "DiscoveryIdentity-Name" 来判断，是否在标准客户端名集合里。
      */
     boolean isRateLimiterThrottleStandardClients();
 
     /**
      * A list of certified clients. This is in addition to standard eureka Java clients.
+     *
+     * 标准客户端名集合
+     *
+     * 标准客户端名集合。默认包含"DefaultClient" 和 "DefaultServer" 。
      */
     Set<String> getRateLimiterPrivilegedClients();
 
     /**
      * Rate limiter, token bucket algorithm property. See also {@link #getRateLimiterRegistryFetchAverageRate()}
      * and {@link #getRateLimiterFullFetchAverageRate()}.
+     *
+     * 速率限制的 burst size ，使用令牌桶算法。 TODO 芋艿：算法
      */
     int getRateLimiterBurstSize();
 
     /**
      * Rate limiter, token bucket algorithm property. Specifies the average enforced request rate.
      * See also {@link #getRateLimiterBurstSize()}.
+     *
+     * 增量拉取注册信息的速率限制
      */
     int getRateLimiterRegistryFetchAverageRate();
 
     /**
      * Rate limiter, token bucket algorithm property. Specifies the average enforced request rate.
      * See also {@link #getRateLimiterBurstSize()}.
+     *
+     * 全量拉取注册信息的速率限制
      */
     int getRateLimiterFullFetchAverageRate();
 
     /**
+     *
+     * 跳过：AWS 使用
+     *
      * Name of the Role used to describe auto scaling groups from third AWS accounts.
      */
     String getListAutoScalingGroupsRoleName();
 
     /**
+     * JSON 编解码器名
+     *
      * @return the class name of the full json codec to use for the server. If none set a default codec will be used
      */
     String getJsonCodecName();
 
     /**
+     * XML 编解码器名
+     *
      * @return the class name of the full xml codec to use for the server. If none set a default codec will be used
      */
     String getXmlCodecName();
 
     /**
+     *
+     * 跳过：AWS 使用
+     *
      * Get the configured binding strategy EIP or Route53.
      * @return the configured binding strategy
      */
     AwsBindingStrategy getBindingStrategy();
 
     /**
+     *
+     * 跳过：AWS 使用
      *
      * @return the ttl used to set up the route53 domain if new
      */
@@ -647,6 +751,8 @@ public interface EurekaServerConfig {
      * <em>The changes are effective at runtime.</em>
      * </p>
      *
+     * 跳过：AWS 使用
+     *
      * @return the number of times the server should try to bind to the
      *         candidate Route53 domain.
      */
@@ -659,6 +765,8 @@ public interface EurekaServerConfig {
      * <em>The changes are effective at runtime.</em>
      * </p>
      *
+     * 跳过：AWS 使用
+     *
      * @return the time in milliseconds.
      */
     int getRoute53BindingRetryIntervalMs();
@@ -666,6 +774,8 @@ public interface EurekaServerConfig {
     /**
      * To avoid configuration API pollution when trying new/experimental or features or for the migration process,
      * the corresponding configuration can be put into experimental configuration section.
+     *
+     * 获得实验性属性值
      *
      * @return a property of experimental feature
      */

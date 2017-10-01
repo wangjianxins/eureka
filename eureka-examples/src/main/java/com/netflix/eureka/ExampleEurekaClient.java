@@ -69,7 +69,8 @@ public class ExampleEurekaClient {
     public void sendRequestToServiceUsingEureka(EurekaClient eurekaClient) {
         // initialize the client
         // this is the vip address for the example service to talk to as defined in conf/sample-eureka-service.properties
-        String vipAddress = "sampleservice.mydomain.net";
+//        String vipAddress = "sampleservice.mydomain.net";
+        String vipAddress = "eureka.mydomain.net";
 
         InstanceInfo nextServerInfo = null;
         try {
@@ -141,12 +142,12 @@ public class ExampleEurekaClient {
 
         System.setProperty("eureka.region", "default");
         System.setProperty("eureka.name", "eureka");
-//        System.setProperty("eureka.vipAddress", "eureka.mydomain.net");
-        System.setProperty("eureka.vipAddress", "${eureka}.eureka.mydomain.net");
+        System.setProperty("eureka.vipAddress", "eureka.mydomain.net");
+//        System.setProperty("eureka.vipAddress", "${eureka}.eureka.mydomain.net");
         System.setProperty("eureka.port", "8080");
         System.setProperty("eureka.preferSameZone", "false");
         System.setProperty("eureka.shouldUseDns", "false");
-        System.setProperty("eureka.shouldFetchRegistry", "false");
+        System.setProperty("eureka.shouldFetchRegistry", "true");
         System.setProperty("eureka.serviceUrl.defaultZone", myServiceUrl);
         System.setProperty("eureka.serviceUrl.default.defaultZone", myServiceUrl);
         System.setProperty("eureka.awsAccessId", "fake_aws_access_id");
@@ -157,7 +158,7 @@ public class ExampleEurekaClient {
 
 
 //        ConfigurationManager.getConfigInstance().setProperty("eureka.environment", "production");
-        System.setProperty("eureka", "production");
+//        System.setProperty("eureka", "production");
     }
 
 }
