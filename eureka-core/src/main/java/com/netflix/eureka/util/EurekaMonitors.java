@@ -16,8 +16,6 @@
 
 package com.netflix.eureka.util;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.netflix.appinfo.AmazonInfo;
 import com.netflix.appinfo.AmazonInfo.MetaDataKey;
 import com.netflix.appinfo.ApplicationInfoManager;
@@ -26,6 +24,8 @@ import com.netflix.appinfo.DataCenterInfo.Name;
 import com.netflix.servo.DefaultMonitorRegistry;
 import com.netflix.servo.annotations.DataSourceType;
 import com.netflix.servo.monitor.Monitors;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * The enum that encapsulates all statistics monitored by Eureka.
@@ -40,7 +40,13 @@ import com.netflix.servo.monitor.Monitors;
  *
  */
 public enum EurekaMonitors {
+    /**
+     * Eureka-Server 续租次数
+     */
     RENEW("renewCounter", "Number of total renews seen since startup"),
+    /**
+     * Eureka-Server 取消注册应用对象信息次数
+     */
     CANCEL("cancelCounter", "Number of total cancels seen since startup"),
     GET_ALL_CACHE_MISS("getAllCacheMissCounter", "Number of total registery queries seen since startup"),
     GET_ALL_CACHE_MISS_DELTA("getAllCacheMissDeltaCounter",
@@ -56,11 +62,20 @@ public enum EurekaMonitors {
     GET_ALL_WITH_REMOTE_REGIONS("getAllWithRemoteRegionCounter",
             "Number of total registry queries with remote regions, seen since startup"),
     GET_APPLICATION("getApplicationCounter", "Number of total application queries seen since startup"),
+    /**
+     * Eureka-Server 注册应用对象信息次数
+     */
     REGISTER("registerCounter", "Number of total registers seen since startup"),
     EXPIRED("expiredCounter", "Number of total expired leases since startup"),
     STATUS_UPDATE("statusUpdateCounter", "Number of total admin status updates since startup"),
     STATUS_OVERRIDE_DELETE("statusOverrideDeleteCounter", "Number of status override removals"),
+    /**
+     * Eureka-Server 取消注册应用对象信息不存在的次数
+     */
     CANCEL_NOT_FOUND("cancelNotFoundCounter", "Number of total cancel requests on non-existing instance since startup"),
+    /**
+     * Eureka-Server 续租不存在的次数
+     */
     RENEW_NOT_FOUND("renewNotFoundexpiredCounter", "Number of total renew on non-existing instance since startup"),
     REJECTED_REPLICATIONS("numOfRejectedReplications", "Number of replications rejected because of full queue"),
     FAILED_REPLICATIONS("numOfFailedReplications", "Number of failed replications - likely from timeouts"),

@@ -1369,9 +1369,18 @@ public class InstanceInfo {
         return version;
     }
 
+    /**
+     * 操作类型
+     */
     public enum ActionType {
+        /**
+         * 添加
+         */
         ADDED, // Added in the discovery server
         MODIFIED, // Changed in the discovery server
+        /**
+         * 删除
+         */
         DELETED
         // Deleted from the discovery server
     }
