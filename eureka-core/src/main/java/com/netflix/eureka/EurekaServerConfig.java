@@ -117,6 +117,12 @@ public interface EurekaServerConfig {
      * <em>The changes are effective at runtime.</em>
      * </p>
      *
+     * 是否开启自我保护模式。
+     * FROM 周立——《理解Eureka的自我保护模式》
+     * 当Eureka Server节点在短时间内丢失过多客户端时（可能发生了网络分区故障），那么这个节点就会进入自我保护模式。
+     * 一旦进入该模式，Eureka Server就会保护服务注册表中的信息，不再删除服务注册表中的数据（也就是不会注销任何微服务）。
+     * 当网络故障恢复后，该Eureka Server节点会自动退出自我保护模式。
+     *
      * @return true to enable self preservation, false otherwise.
      */
     boolean shouldEnableSelfPreservation();
@@ -131,6 +137,8 @@ public interface EurekaServerConfig {
      * <em>The changes are effective at runtime.</em>
      * </p>
      *
+     * 开启自我保护模式比例，超过该比例后开启自我保护模式。
+     *
      * @return value between 0 and 1 indicating the percentage. For example,
      *         <code>85%</code> will be specified as <code>0.85</code>.
      */
@@ -139,6 +147,8 @@ public interface EurekaServerConfig {
     /**
      * The interval with which the threshold as specified in
      * {@link #getRenewalPercentThreshold()} needs to be updated.
+     *
+     * 自我保护模式比例更新频率，单位：毫秒。
      *
      * @return time in milliseconds indicating the interval.
      */
@@ -152,6 +162,9 @@ public interface EurekaServerConfig {
      * <p>
      * <em>The changes are effective at runtime.</em>
      * </p>
+     *
+     * Eureka-Server 集群节点更新频率，单位：毫秒。
+     * TODO（后面源码在细读，可能要修正）
      *
      * @return timer in milliseconds indicating the interval.
      */
@@ -198,6 +211,9 @@ public interface EurekaServerConfig {
      * When the instance registry starts up empty, it builds over time when the
      * clients start to send heartbeats and the server requests the clients for
      * registration information.
+     *
+     * Eureka-Server 启动时，从远程 Eureka-Server 读取不到注册信息时，多长时间不允许 Eureka-Client 访问。
+     * TODO（后面源码在细读，可能要修正）
      *
      * @return time in milliseconds.
      */
@@ -258,6 +274,8 @@ public interface EurekaServerConfig {
      * Get the time for which the delta information should be cached for the
      * clients to retrieve the value without missing it.
      *
+     * TODO 待定
+     *
      * @return time in milliseconds
      */
     long getRetentionTimeInMSInDeltaQueue();
@@ -273,6 +291,8 @@ public interface EurekaServerConfig {
     /**
      * Get the time interval with which the task that expires instances should
      * wake up and run.
+     *
+     * 租约过期定时任务执行频率，单位：毫秒。
      *
      * @return time in milliseconds.
      */
@@ -311,6 +331,8 @@ public interface EurekaServerConfig {
      * Gets the time for which the registry payload should be kept in the cache
      * if it is not invalidated by change events.
      *
+     * 读写缓存写入后过期时间，单位：秒。
+     *
      * @return time in seconds.
      */
     long getResponseCacheAutoExpirationInSeconds();
@@ -318,6 +340,9 @@ public interface EurekaServerConfig {
     /**
      * Gets the time interval with which the payload cache of the client should
      * be updated.
+     *
+     * 只读缓存更新频率，单位：毫秒。
+     * 只读缓存定时更新任务只更新读取过请求 (com.netflix.eureka.registry.Key)，因此虽然永不过期，也会存在读取不到的情况。
      *
      * @return time in milliseconds.
      */
@@ -327,6 +352,10 @@ public interface EurekaServerConfig {
      * The {@link com.netflix.eureka.registry.ResponseCache} currently uses a two level caching
      * strategy to responses. A readWrite cache with an expiration policy, and a readonly cache
      * that caches without expiry.
+     *
+     * 否开启只读请求响应缓存。
+     * 响应缓存 ( ResponseCache ) 机制目前使用两层缓存策略。
+     * 优先读取永不过期的只读缓存，读取不到后读取固定过期的读写缓存。
      *
      * @return true if the read only cache is to be used
      */
@@ -365,6 +394,10 @@ public interface EurekaServerConfig {
     /**
      * Get the maximum number of threads to be used for status replication.
      *
+     * 跳过：AWS
+     *
+     * 同步应用对象状态最大线程数。
+     *
      * @return maximum number of threads to be used for status replication.
      */
     int getMaxThreadsForStatusReplication();
@@ -377,6 +410,10 @@ public interface EurekaServerConfig {
      * this value can vary.
      * </p>
      *
+     * 跳过：AWS
+     *
+     * 待执行同步应用对象状态事件缓冲最大数量。
+     *
      * @return the maximum number of replication events that can be allowed to
      *         back up.
      */
@@ -387,6 +424,8 @@ public interface EurekaServerConfig {
      * <p>
      * <em>The changes are effective at runtime.</em>
      * </p>
+     *
+     * 是否同步应用对象信息，当应用对象信息最后更新时间戳( lastDirtyTimestamp )发生改变。
      *
      * @return true, to synchronize, false otherwise.
      */
@@ -421,6 +460,8 @@ public interface EurekaServerConfig {
      * this value can vary.
      * </p>
      *
+     * 待执行同步应用对象信息事件缓冲最大数量
+     *
      * @return the maximum number of replication events that can be allowed to
      *         back up.
      */
@@ -444,6 +485,8 @@ public interface EurekaServerConfig {
 
     /**
      * Get the maximum number of threads to be used for replication.
+     *
+     * 同步应用对象信息最大线程数
      *
      * @return maximum number of threads to be used for replication.
      */
@@ -469,6 +512,8 @@ public interface EurekaServerConfig {
     /**
      * Get the time in milliseconds to try to replicate before dropping
      * replication events.
+     *
+     * 执行单个同步应用对象信息状态任务最大时间
      *
      * @return time in milliseconds
      */
@@ -591,6 +636,9 @@ public interface EurekaServerConfig {
      * @param regionName Name of the region for which the application whitelist is to be retrieved. If null a global
      *                   setting is returned.
      *
+     * 从远程 Eureka-Server 拉取应用注册信息集合。
+     * TODOTODO（后面源码在细读，可能要修正）
+     *
      * @return A set of application names which must be retrieved from the passed region. If <code>null</code> all
      * applications must be retrieved.
      */
@@ -633,6 +681,8 @@ public interface EurekaServerConfig {
     /**
      * Old behavior of fallback to applications in the remote region (if configured) if there are no instances of that
      * application in the local region, will be disabled.
+     *
+     * 是否禁用本地读取不到注册信息，从远程 Eureka-Server 读取。
      *
      * @return {@code true} if the old behavior is to be disabled.
      */

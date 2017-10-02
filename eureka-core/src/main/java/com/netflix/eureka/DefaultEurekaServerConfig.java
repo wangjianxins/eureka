@@ -55,15 +55,23 @@ public class DefaultEurekaServerConfig implements EurekaServerConfig {
     private static final String ARCHAIUS_DEPLOYMENT_ENVIRONMENT = "archaius.deployment.environment";
     private static final String TEST = "test";
     private static final String EUREKA_ENVIRONMENT = "eureka.environment";
-    private static final Logger logger = LoggerFactory
-            .getLogger(DefaultEurekaServerConfig.class);
-    private static final DynamicPropertyFactory configInstance = com.netflix.config.DynamicPropertyFactory
-            .getInstance();
+
+    private static final Logger logger = LoggerFactory.getLogger(DefaultEurekaServerConfig.class);
+
+    /**
+     * 配置文件对象
+     */
+    private static final DynamicPropertyFactory configInstance = com.netflix.config.DynamicPropertyFactory.getInstance();
+    /**
+     * 配置文件
+     */
     private static final DynamicStringProperty EUREKA_PROPS_FILE = DynamicPropertyFactory
-            .getInstance().getStringProperty("eureka.server.props",
-                    "eureka-server");
+            .getInstance().getStringProperty("eureka.server.props", "eureka-server");
     private static final int TIME_TO_WAIT_FOR_REPLICATION = 30000;
 
+    /**
+     * 命名空间
+     */
     private String namespace = "eureka.";
 
     // These counters are checked for each HTTP request. Instantiating them per request like for the other
@@ -85,27 +93,24 @@ public class DefaultEurekaServerConfig implements EurekaServerConfig {
     }
 
     public DefaultEurekaServerConfig(String namespace) {
+        // 设置 namespace，为 "." 结尾
         this.namespace = namespace;
+        // 初始化 配置文件对象
         init();
     }
 
     private void init() {
-        String env = ConfigurationManager.getConfigInstance().getString(
-                EUREKA_ENVIRONMENT, TEST);
-        ConfigurationManager.getConfigInstance().setProperty(
-                ARCHAIUS_DEPLOYMENT_ENVIRONMENT, env);
-
+        // 初始化 配置文件对象
+        String env = ConfigurationManager.getConfigInstance().getString(EUREKA_ENVIRONMENT, TEST);
+        ConfigurationManager.getConfigInstance().setProperty(ARCHAIUS_DEPLOYMENT_ENVIRONMENT, env);
         String eurekaPropsFile = EUREKA_PROPS_FILE.get();
         try {
             // ConfigurationManager
             // .loadPropertiesFromResources(eurekaPropsFile);
-            ConfigurationManager
-                    .loadCascadedPropertiesFromResources(eurekaPropsFile);
+            ConfigurationManager.loadCascadedPropertiesFromResources(eurekaPropsFile);
         } catch (IOException e) {
-            logger.warn(
-                    "Cannot find the properties specified : {}. This may be okay if there are other environment "
-                            + "specific properties or the configuration is installed with a different mechanism.",
-                    eurekaPropsFile);
+            logger.warn("Cannot find the properties specified : {}. This may be okay if there are other environment "
+                            + "specific properties or the configuration is installed with a different mechanism.", eurekaPropsFile);
         }
     }
 
