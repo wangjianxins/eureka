@@ -26,7 +26,9 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Tomasz Bak
  */
 @Singleton
+// TODO 芋艿：实现
 public class GzipEncodingEnforcingFilter implements Filter {
+
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
     }

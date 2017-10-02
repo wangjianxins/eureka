@@ -16,19 +16,14 @@
 
 package com.netflix.eureka;
 
-import javax.inject.Singleton;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.InstanceStatus;
+
+import javax.inject.Singleton;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * Filter to check whether the eureka server is ready to take requests based on
@@ -67,6 +62,7 @@ public class StatusFilter implements Filter {
         }
         chain.doFilter(request, response);
     }
+    // TODO 芋艿：测试下307的反馈
 
     /*
      * (non-Javadoc)

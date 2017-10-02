@@ -1,23 +1,21 @@
 package com.netflix.eureka;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-
 import com.google.common.base.Strings;
 import com.netflix.appinfo.AbstractEurekaIdentity;
 import com.netflix.servo.monitor.DynamicCounter;
 import com.netflix.servo.monitor.MonitorConfig;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+
 /**
  * An auth filter for client requests. For now, it only logs supported client identification data from header info
+ *
+ * Eureka-Server 请求认证过滤器
+ *
  */
 @Singleton
 public class ServerRequestAuthFilter implements Filter {
