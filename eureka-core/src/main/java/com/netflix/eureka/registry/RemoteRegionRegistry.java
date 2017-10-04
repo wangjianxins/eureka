@@ -15,6 +15,24 @@
  */
 package com.netflix.eureka.registry;
 
+import javax.inject.Inject;
+import javax.ws.rs.core.MediaType;
+import java.net.InetAddress;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.ActionType;
@@ -42,28 +60,19 @@ import com.sun.jersey.client.apache4.ApacheHttpClient4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-import javax.ws.rs.core.MediaType;
-import java.net.InetAddress;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-
 /**
  * Handles all registry operations that needs to be done on a eureka service running in an other region.
  *
  * The primary operations include fetching registry information from remote region and fetching delta information
  * on a periodic basis.
  *
+ * TODO: a lot of the networking code in this class can be replaced by newer code in
+ * {@link com.netflix.discovery.DiscoveryClient}
+ *
  * @author Karthik Ranganathan
  *
  */
 public class RemoteRegionRegistry implements LookupService<String> {
-
     private static final Logger logger = LoggerFactory.getLogger(RemoteRegionRegistry.class);
 
     private final ApacheHttpClient4 discoveryApacheClient;
@@ -73,11 +82,11 @@ public class RemoteRegionRegistry implements LookupService<String> {
 
     private final ScheduledExecutorService scheduler;
     // monotonically increasing generation counter to ensure stale threads do not reset registry to an older version
-    private final AtomicLong fullRegistryGeneration = new AtomicLong(0);
-    private final AtomicLong deltaGeneration = new AtomicLong(0);
+    private final AtomicLong fetchRegistryGeneration = new AtomicLong(0);
+    private final Lock fetchRegistryUpdateLock = new ReentrantLock();
 
-    private final AtomicReference<Applications> applications = new AtomicReference<Applications>();
-    private final AtomicReference<Applications> applicationsDelta = new AtomicReference<Applications>();
+    private final AtomicReference<Applications> applications = new AtomicReference<Applications>(new Applications());
+    private final AtomicReference<Applications> applicationsDelta = new AtomicReference<Applications>(new Applications());
     private final EurekaServerConfig serverConfig;
     private volatile boolean readyForServingData;
     private final EurekaHttpClient eurekaHttpClient;
@@ -143,7 +152,6 @@ public class RemoteRegionRegistry implements LookupService<String> {
         }
         this.eurekaHttpClient = newEurekaHttpClient;
 
-        applications.set(new Applications());
         try {
             if (fetchRegistry()) {
                 this.readyForServingData = true;
@@ -236,12 +244,12 @@ public class RemoteRegionRegistry implements LookupService<String> {
     }
 
     private boolean fetchAndStoreDelta() throws Throwable {
-        long currDeltaGeneration = deltaGeneration.get();
+        long currGeneration = fetchRegistryGeneration.get();
         Applications delta = fetchRemoteRegistry(true);
 
         if (delta == null) {
             logger.error("The delta is null for some reason. Not storing this information");
-        } else if (deltaGeneration.compareAndSet(currDeltaGeneration, currDeltaGeneration + 1)) {
+        } else if (fetchRegistryGeneration.compareAndSet(currGeneration, currGeneration + 1)) {
             this.applicationsDelta.set(delta);
         } else {
             delta = null;  // set the delta to null so we don't use it
@@ -253,8 +261,18 @@ public class RemoteRegionRegistry implements LookupService<String> {
                     + "safe. Hence got the full registry.");
             return storeFullRegistry();
         } else {
-            updateDelta(delta);
-            String reconcileHashCode = getApplications().getReconcileHashCode();
+            String reconcileHashCode = "";
+            if (fetchRegistryUpdateLock.tryLock()) {
+                try {
+                    updateDelta(delta);
+                    reconcileHashCode = getApplications().getReconcileHashCode();
+                } finally {
+                    fetchRegistryUpdateLock.unlock();
+                }
+            } else {
+                logger.warn("Cannot acquire update lock, aborting updateDelta operation of fetchAndStoreDelta");
+            }
+
             // There is a diff in number of instances for some reason
             if ((!reconcileHashCode.equals(delta.getAppsHashCode()))) {
                 return reconcileAndLogDifference(delta, reconcileHashCode);
@@ -341,12 +359,13 @@ public class RemoteRegionRegistry implements LookupService<String> {
      * @return the full registry information.
      */
     public boolean storeFullRegistry() {
-        long currentUpdateGeneration = fullRegistryGeneration.get();
+        long currentGeneration = fetchRegistryGeneration.get();
         Applications apps = fetchRemoteRegistry(false);
         if (apps == null) {
             logger.error("The application is null for some reason. Not storing this information");
-        } else if (fullRegistryGeneration.compareAndSet(currentUpdateGeneration, currentUpdateGeneration + 1)) {
+        } else if (fetchRegistryGeneration.compareAndSet(currentGeneration, currentGeneration + 1)) {
             applications.set(apps);
+            applicationsDelta.set(apps);
             logger.info("Successfully updated registry with the latest content");
             return true;
         } else {
@@ -410,13 +429,25 @@ public class RemoteRegionRegistry implements LookupService<String> {
         logger.warn("The Reconcile hashcodes do not match, client : {}, server : {}. Getting the full registry",
                 reconcileHashCode, delta.getAppsHashCode());
 
-        Applications serverApps = this.fetchRemoteRegistry(false);
-        applications.set(serverApps);
-        applicationsDelta.set(serverApps);
-        logger.warn("The Reconcile hashcodes after complete sync up, client : {}, server : {}.",
-                getApplications().getReconcileHashCode(),
-                delta.getAppsHashCode());
-        return true;
+        long currentGeneration = fetchRegistryGeneration.get();
+
+        Applications apps = this.fetchRemoteRegistry(false);
+        if (apps == null) {
+            logger.error("The application is null for some reason. Not storing this information");
+            return false;
+        }
+
+        if (fetchRegistryGeneration.compareAndSet(currentGeneration, currentGeneration + 1)) {
+            applications.set(apps);
+            applicationsDelta.set(apps);
+            logger.warn("The Reconcile hashcodes after complete sync up, client : {}, server : {}.",
+                    getApplications().getReconcileHashCode(),
+                    delta.getAppsHashCode());
+            return true;
+        }else {
+            logger.warn("Not setting the applications map as another thread has advanced the update generation");
+            return true;  // still return true
+        }
     }
 
     /**
