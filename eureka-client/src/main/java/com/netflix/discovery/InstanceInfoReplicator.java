@@ -95,6 +95,7 @@ class InstanceInfoReplicator implements Runnable {
         }
     }
 
+    @Override
     public void run() {
         try {
             discoveryClient.refreshInstanceInfo();

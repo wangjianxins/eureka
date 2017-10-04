@@ -67,6 +67,9 @@ public enum EurekaMonitors {
      */
     REGISTER("registerCounter", "Number of total registers seen since startup"),
     EXPIRED("expiredCounter", "Number of total expired leases since startup"),
+    /**
+     * Eureka-Server 应用对象信息状态变更次数
+     */
     STATUS_UPDATE("statusUpdateCounter", "Number of total admin status updates since startup"),
     STATUS_OVERRIDE_DELETE("statusOverrideDeleteCounter", "Number of status override removals"),
     /**

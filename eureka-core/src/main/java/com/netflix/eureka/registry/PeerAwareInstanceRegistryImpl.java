@@ -16,38 +16,22 @@
 
 package com.netflix.eureka.registry;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import com.netflix.appinfo.AmazonInfo;
+import com.netflix.appinfo.*;
 import com.netflix.appinfo.AmazonInfo.MetaDataKey;
-import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.appinfo.DataCenterInfo;
 import com.netflix.appinfo.DataCenterInfo.Name;
-import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.InstanceStatus;
-import com.netflix.appinfo.LeaseInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
-import com.netflix.eureka.registry.rule.DownOrStartingRule;
-import com.netflix.eureka.registry.rule.FirstMatchWinsCompositeRule;
-import com.netflix.eureka.registry.rule.InstanceStatusOverrideRule;
-import com.netflix.eureka.registry.rule.LeaseExistsRule;
-import com.netflix.eureka.registry.rule.OverrideExistsRule;
-import com.netflix.eureka.resources.CurrentRequestVersion;
 import com.netflix.eureka.EurekaServerConfig;
 import com.netflix.eureka.Version;
 import com.netflix.eureka.cluster.PeerEurekaNode;
 import com.netflix.eureka.cluster.PeerEurekaNodes;
 import com.netflix.eureka.lease.Lease;
+import com.netflix.eureka.registry.rule.*;
 import com.netflix.eureka.resources.ASGResource.ASGStatus;
+import com.netflix.eureka.resources.CurrentRequestVersion;
 import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.eureka.util.MeasuredRate;
 import com.netflix.servo.DefaultMonitorRegistry;
@@ -59,6 +43,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.net.URI;
+import java.util.*;
 
 /**
  * Handles replication of all operations to {@link AbstractInstanceRegistry} to peer
@@ -472,7 +458,6 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
         }
         for (final PeerEurekaNode node : peerEurekaNodes.getPeerEurekaNodes()) {
             replicateASGInfoToReplicaNodes(asgName, newStatus, node);
-
         }
     }
 

@@ -80,6 +80,8 @@ public class ExampleEurekaService {
         String myHostName = InetAddress.getLocalHost().getHostName();
         String myServiceUrl = "http://" + myHostName + ":8080/v2/";
 
+        System.setProperty("eureka.instanceId", "client-server-01");
+
         System.setProperty("eureka.region", "default");
         System.setProperty("eureka.name", "eureka");
         System.setProperty("eureka.vipAddress", "eureka.mydomain.net");
@@ -96,6 +98,7 @@ public class ExampleEurekaService {
         System.setProperty("eureka.numberRegistrySyncRetries", "0");
 
 
+        System.setProperty("eureka.traffic.enabled", String.valueOf(Boolean.FALSE));
 
 
 //        ConfigurationManager.getConfigInstance().setProperty("eureka.environment", "production");

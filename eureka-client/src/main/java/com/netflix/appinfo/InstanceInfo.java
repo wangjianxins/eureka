@@ -1377,6 +1377,9 @@ public class InstanceInfo {
          * 添加
          */
         ADDED, // Added in the discovery server
+        /**
+         * 更新
+         */
         MODIFIED, // Changed in the discovery server
         /**
          * 删除

@@ -75,6 +75,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
     private final ConcurrentHashMap<String, Map<String, Lease<InstanceInfo>>> registry = new ConcurrentHashMap<String, Map<String, Lease<InstanceInfo>>>();
 
     protected Map<String, RemoteRegionRegistry> regionNameVSRemoteRegistry = new HashMap<String, RemoteRegionRegistry>();
+
     protected final ConcurrentMap<String, InstanceStatus> overriddenInstanceStatusMap = CacheBuilder
             .newBuilder().initialCapacity(500)
             .expireAfterAccess(1, TimeUnit.HOURS)
@@ -396,7 +397,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
     public boolean renew(String appName, String id, boolean isReplication) {
         // 增加 续租次数 到 监控
         RENEW.increment(isReplication);
-        // 获得 续租
+        // 获得 租约
         Map<String, Lease<InstanceInfo>> gMap = registry.get(appName);
         Lease<InstanceInfo> leaseToRenew = null;
         if (gMap != null) {
@@ -517,32 +518,41 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                                 boolean isReplication) {
         try {
             read.lock();
+            // 添加 状态变更次数 到 监控
             STATUS_UPDATE.increment(isReplication);
+            // 获得 租约
             Map<String, Lease<InstanceInfo>> gMap = registry.get(appName);
             Lease<InstanceInfo> lease = null;
             if (gMap != null) {
                 lease = gMap.get(id);
             }
+            // 租约不存在
             if (lease == null) {
                 return false;
             } else {
+                // 设置 租约最后更新时间（续租）
                 lease.renew();
+                // 应用对象信息不存在
                 InstanceInfo info = lease.getHolder();
                 // Lease is always created with its instance info object.
                 // This log statement is provided as a safeguard, in case this invariant is violated.
                 if (info == null) {
                     logger.error("Found Lease without a holder for instance id {}", id);
                 }
+                //
                 if ((info != null) && !(info.getStatus().equals(newStatus))) {
+                    // 设置 租约的开始服务的时间戳（只有第一次有效）
                     // Mark service as UP if needed
                     if (InstanceStatus.UP.equals(newStatus)) {
                         lease.serviceUp();
                     }
-                    // This is NAC overriden status
+                    // TODO override status
+                    // This is NAC overridden status
                     overriddenInstanceStatusMap.put(id, newStatus);
                     // Set it for transfer of overridden status to replica on
                     // replica start up
                     info.setOverriddenStatus(newStatus);
+                    // TODO 集群
                     long replicaDirtyTimestamp = 0;
                     info.setStatusWithoutDirty(newStatus);
                     if (lastDirtyTimestamp != null) {
@@ -553,9 +563,12 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                     if (replicaDirtyTimestamp > info.getLastDirtyTimestamp()) {
                         info.setLastDirtyTimestamp(replicaDirtyTimestamp);
                     }
+                    // 添加到 最近租约变更记录队列
                     info.setActionType(ActionType.MODIFIED);
                     recentlyChangedQueue.add(new RecentlyChangedItem(lease));
+                    // TODO 芋艿
                     info.setLastUpdatedTimestamp();
+                    // 设置 响应缓存 过期
                     invalidateCache(appName, info.getVIPAddress(), info.getSecureVipAddress());
                 }
                 return true;
@@ -924,6 +937,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
      */
     @Deprecated
     public Applications getApplicationDeltas() {
+        // TODO 监控
         GET_ALL_CACHE_MISS_DELTA.increment();
         Applications apps = new Applications();
         apps.setVersion(responseCache.getVersionDelta().get());
@@ -936,14 +950,11 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
             while (iter.hasNext()) {
                 Lease<InstanceInfo> lease = iter.next().getLeaseInfo();
                 InstanceInfo instanceInfo = lease.getHolder();
-                Object[] args = {instanceInfo.getId(),
-                        instanceInfo.getStatus().name(),
-                        instanceInfo.getActionType().name()};
+                Object[] args = {instanceInfo.getId(), instanceInfo.getStatus().name(), instanceInfo.getActionType().name()};
                 logger.debug(
                         "The instance id %s is found with status %s and actiontype %s",
                         args);
-                Application app = applicationInstancesMap.get(instanceInfo
-                        .getAppName());
+                Application app = applicationInstancesMap.get(instanceInfo.getAppName());
                 if (app == null) {
                     app = new Application(instanceInfo.getAppName());
                     applicationInstancesMap.put(instanceInfo.getAppName(), app);
@@ -996,31 +1007,35 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
      * not exist locally or in remote regions.
      */
     public Applications getApplicationDeltasFromMultipleRegions(String[] remoteRegions) {
+        // 获得 过滤的应用对象信息所在的区域( region ) TODO 芋艿：可能不对
         if (null == remoteRegions) {
             remoteRegions = allKnownRemoteRegions; // null means all remote regions.
         }
-
         boolean includeRemoteRegion = remoteRegions.length != 0;
 
+        // TODO 监控
         if (includeRemoteRegion) {
             GET_ALL_WITH_REMOTE_REGIONS_CACHE_MISS_DELTA.increment();
         } else {
             GET_ALL_CACHE_MISS_DELTA.increment();
         }
 
+        // 创建 注册的应用集合
         Applications apps = new Applications();
         apps.setVersion(responseCache.getVersionDeltaWithRegions().get());
-        Map<String, Application> applicationInstancesMap = new HashMap<String, Application>();
+        Map<String, Application> applicationInstancesMap = new HashMap<String, Application>(); // 应用映射。key：应用名
         try {
             write.lock();
+
+            // 获得 最近租约变更记录队列
             Iterator<RecentlyChangedItem> iter = this.recentlyChangedQueue.iterator();
             logger.debug("The number of elements in the delta queue is :" + this.recentlyChangedQueue.size());
+
+            // 添加 最新租约变更的应用 到 注册的应用集合
             while (iter.hasNext()) {
                 Lease<InstanceInfo> lease = iter.next().getLeaseInfo();
                 InstanceInfo instanceInfo = lease.getHolder();
-                Object[] args = {instanceInfo.getId(),
-                        instanceInfo.getStatus().name(),
-                        instanceInfo.getActionType().name()};
+                Object[] args = {instanceInfo.getId(), instanceInfo.getStatus().name(), instanceInfo.getActionType().name()};
                 logger.debug("The instance id %s is found with status %s and actiontype %s", args);
                 Application app = applicationInstancesMap.get(instanceInfo.getAppName());
                 if (app == null) {
@@ -1055,6 +1070,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                 }
             }
 
+            // TODO 芋艿：设定版本号
             Applications allApps = getApplicationsFromMultipleRegions(remoteRegions);
             apps.setAppsHashCode(allApps.getReconcileHashCode());
             return apps;

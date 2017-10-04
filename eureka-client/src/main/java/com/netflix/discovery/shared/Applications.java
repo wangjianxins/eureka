@@ -16,24 +16,6 @@
 
 package com.netflix.discovery.shared;
 
-import javax.annotation.Nullable;
-import java.util.AbstractQueue;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -46,6 +28,15 @@ import com.netflix.discovery.provider.Serializer;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
 /**
  * The class that wraps all the registry information returned by eureka server.
  *
@@ -56,6 +47,8 @@ import com.thoughtworks.xstream.annotations.XStreamImplicit;
  * {@link InstanceStatus#UP} status as specified by the configuration
  * {@link EurekaClientConfig#shouldFilterOnlyUpInstances()}.
  * </p>
+ *
+ * 注册的应用集合
  *
  * @author Karthik Ranganathan
  *
@@ -82,6 +75,9 @@ public class Applications {
 
     private String appsHashCode;
     private Long versionDelta;
+    /**
+     * 应用队列
+     */
     @XStreamImplicit
     private final AbstractQueue<Application> applications;
     private final Map<String, Application> appNameApplicationMap;

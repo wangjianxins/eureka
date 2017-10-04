@@ -166,6 +166,7 @@ public class DiscoveryClient implements EurekaClient {
     private volatile HealthCheckHandler healthCheckHandler;
     private volatile Map<String, Applications> remoteRegionVsApps = new ConcurrentHashMap<>();
     private volatile InstanceInfo.InstanceStatus lastRemoteInstanceStatus = InstanceInfo.InstanceStatus.UNKNOWN;
+    // TODO 芋艿：事件监听器
     private final CopyOnWriteArraySet<EurekaEventListener> eventListeners = new CopyOnWriteArraySet<>();
 
     /**
@@ -173,6 +174,7 @@ public class DiscoveryClient implements EurekaClient {
      * 无实际业务用途，用于打 logger
      */
     private String appPathIdentifier;
+    // TODO 芋艿：事件监听器
     private ApplicationInfoManager.StatusChangeListener statusChangeListener;
 
     private InstanceInfoReplicator instanceInfoReplicator;
@@ -1324,7 +1326,7 @@ public class DiscoveryClient implements EurekaClient {
             };
 
             if (clientConfig.shouldOnDemandUpdateStatusChange()) {
-                applicationInfoManager.registerStatusChangeListener(statusChangeListener);
+                applicationInfoManager.registerStatusChangeListener(statusChangeListener); // TODO 芋艿，监听
             }
 
             instanceInfoReplicator.start(clientConfig.getInitialInstanceInfoReplicationIntervalSeconds());
@@ -1628,7 +1630,6 @@ public class DiscoveryClient implements EurekaClient {
             listener.onEvent(event);
         }
     }
-
 
     /**
      * @deprecated see {@link com.netflix.appinfo.InstanceInfo#getZone(String[], com.netflix.appinfo.InstanceInfo)}
