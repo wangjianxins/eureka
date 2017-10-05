@@ -16,13 +16,15 @@
 
 package com.netflix.eureka.resources;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.InstanceInfo.InstanceStatus;
+import com.netflix.eureka.EurekaServerConfig;
+import com.netflix.eureka.cluster.PeerEurekaNode;
+import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -34,14 +36,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.InstanceInfo.InstanceStatus;
-import com.netflix.eureka.EurekaServerConfig;
-import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
-import com.netflix.eureka.cluster.PeerEurekaNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A <em>jersey</em> resource that handles operations for a particular instance.
@@ -109,13 +103,17 @@ public class InstanceResource {
             @QueryParam("status") String status,
             @QueryParam("lastDirtyTimestamp") String lastDirtyTimestamp) {
         boolean isFromReplicaNode = "true".equals(isReplication);
+        // 续租
         boolean isSuccess = registry.renew(app.getName(), id, isFromReplicaNode);
 
+        // 续租失败
         // Not found in the registry, immediately ask for a register
         if (!isSuccess) {
             logger.warn("Not Found (Renew): {} - {}", app.getName(), id);
             return Response.status(Status.NOT_FOUND).build();
         }
+
+        // 比较 InstanceInfo 的 lastDirtyTimestamp 属性
         // Check if we need to sync based on dirty time stamp, the client
         // instance might have changed some value
         Response response = null;
@@ -128,7 +126,7 @@ public class InstanceResource {
                     && isFromReplicaNode) {
                 registry.storeOverriddenStatusIfRequired(app.getAppName(), id, InstanceStatus.valueOf(overriddenStatus));
             }
-        } else {
+        } else { // 成功
             response = Response.ok().build();
         }
         logger.debug("Found (Renew): {} - {}; reply status={}" + app.getName(), id, response.getStatus());
@@ -291,19 +289,18 @@ public class InstanceResource {
         }
     }
 
-    private Response validateDirtyTimestamp(Long lastDirtyTimestamp,
-                                            boolean isReplication) {
+    private Response validateDirtyTimestamp(Long lastDirtyTimestamp, boolean isReplication) {
+        // 获取 InstanceInfo
         InstanceInfo appInfo = registry.getInstanceByAppAndId(app.getName(), id, false);
         if (appInfo != null) {
             if ((lastDirtyTimestamp != null) && (!lastDirtyTimestamp.equals(appInfo.getLastDirtyTimestamp()))) {
                 Object[] args = {id, appInfo.getLastDirtyTimestamp(), lastDirtyTimestamp, isReplication};
-
+                // 请求 的 较大
                 if (lastDirtyTimestamp > appInfo.getLastDirtyTimestamp()) {
-                    logger.debug(
-                            "Time to sync, since the last dirty timestamp differs -"
-                                    + " ReplicationInstance id : {},Registry : {} Incoming: {} Replication: {}",
-                            args);
+                    logger.debug("Time to sync, since the last dirty timestamp differs -"
+                                    + " ReplicationInstance id : {},Registry : {} Incoming: {} Replication: {}", args);
                     return Response.status(Status.NOT_FOUND).build();
+                // Server 的 较大
                 } else if (appInfo.getLastDirtyTimestamp() > lastDirtyTimestamp) {
                     // In the case of replication, send the current instance info in the registry for the
                     // replicating node to sync itself with this one.
