@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
- * 应用对象信息区域( region )校验
+ * 应用实例实例区域( region )校验
  *
  * @author Nitesh Kant
  */

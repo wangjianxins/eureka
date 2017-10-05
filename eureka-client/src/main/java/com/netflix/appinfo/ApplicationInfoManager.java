@@ -41,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * {@link AbstractInstanceConfig}.
  * </p>
  *
- * 应用对象信息管理器
+ * 应用实例信息管理器
  *
  * @author Karthik Ranganathan, Greg Kim
  *
@@ -69,15 +69,15 @@ public class ApplicationInfoManager {
      */
     protected final Map<String, StatusChangeListener> listeners;
     /**
-     * 应用对象状态匹配
+     * 应用实例状态匹配
      */
     private final InstanceStatusMapper instanceStatusMapper;
     /**
-     * 应用对象信息
+     * 应用实例信息
      */
     private InstanceInfo instanceInfo;
     /**
-     * 应用对象配置
+     * 应用实例配置
      */
     private EurekaInstanceConfig config;
 
@@ -187,7 +187,6 @@ public class ApplicationInfoManager {
         if (next == null) {
             return;
         }
-
         InstanceStatus prev = instanceInfo.setStatus(next);
         if (prev != null) {
             for (StatusChangeListener listener : listeners.values()) {
@@ -216,8 +215,8 @@ public class ApplicationInfoManager {
      * see {@link InstanceInfo#getHostName()} for explanation on why the hostname is used as the default address
      */
     public void refreshDataCenterInfoIfRequired() {
+        // hostname
         String existingAddress = instanceInfo.getHostName();
-
         String newAddress;
         if (config instanceof RefreshableInstanceConfig) {
             // Refresh data center info, and return up to date address
@@ -225,16 +224,17 @@ public class ApplicationInfoManager {
         } else {
             newAddress = config.getHostName(true);
         }
+        // ip
         String newIp = config.getIpAddress();
-
         if (newAddress != null && !newAddress.equals(existingAddress)) {
             logger.warn("The address changed from : {} => {}", existingAddress, newAddress);
-
             // :( in the legacy code here the builder is acting as a mutator.
             // This is hard to fix as this same instanceInfo instance is referenced elsewhere.
             // We will most likely re-write the client at sometime so not fixing for now.
             InstanceInfo.Builder builder = new InstanceInfo.Builder(instanceInfo);
-            builder.setHostName(newAddress).setIPAddr(newIp).setDataCenterInfo(config.getDataCenterInfo());
+            builder.setHostName(newAddress) // hostname
+                    .setIPAddr(newIp) // ip
+                    .setDataCenterInfo(config.getDataCenterInfo()); // dataCenterInfo
             instanceInfo.setIsDirty();
         }
     }
@@ -246,7 +246,8 @@ public class ApplicationInfoManager {
         }
         int currentLeaseDuration = config.getLeaseExpirationDurationInSeconds();
         int currentLeaseRenewal = config.getLeaseRenewalIntervalInSeconds();
-        if (leaseInfo.getDurationInSecs() != currentLeaseDuration || leaseInfo.getRenewalIntervalInSecs() != currentLeaseRenewal) {
+        if (leaseInfo.getDurationInSecs() != currentLeaseDuration // 租约过期时间 改变
+                || leaseInfo.getRenewalIntervalInSecs() != currentLeaseRenewal) { // 租约续约频率 改变
             LeaseInfo newLeaseInfo = LeaseInfo.Builder.newBuilder()
                     .setRenewalIntervalInSecs(currentLeaseRenewal)
                     .setDurationInSecs(currentLeaseDuration)

@@ -396,7 +396,7 @@ public interface EurekaServerConfig {
      *
      * 跳过：AWS
      *
-     * 同步应用对象状态最大线程数。
+     * 同步应用实例状态最大线程数。
      *
      * @return maximum number of threads to be used for status replication.
      */
@@ -412,7 +412,7 @@ public interface EurekaServerConfig {
      *
      * 跳过：AWS
      *
-     * 待执行同步应用对象状态事件缓冲最大数量。
+     * 待执行同步应用实例状态事件缓冲最大数量。
      *
      * @return the maximum number of replication events that can be allowed to
      *         back up.
@@ -425,7 +425,7 @@ public interface EurekaServerConfig {
      * <em>The changes are effective at runtime.</em>
      * </p>
      *
-     * 是否同步应用对象信息，当应用对象信息最后更新时间戳( lastDirtyTimestamp )发生改变。
+     * 是否同步应用实例信息，当应用实例信息最后更新时间戳( lastDirtyTimestamp )发生改变。
      *
      * @return true, to synchronize, false otherwise.
      */
@@ -460,7 +460,7 @@ public interface EurekaServerConfig {
      * this value can vary.
      * </p>
      *
-     * 待执行同步应用对象信息事件缓冲最大数量
+     * 待执行同步应用实例信息事件缓冲最大数量
      *
      * @return the maximum number of replication events that can be allowed to
      *         back up.
@@ -486,7 +486,7 @@ public interface EurekaServerConfig {
     /**
      * Get the maximum number of threads to be used for replication.
      *
-     * 同步应用对象信息最大线程数
+     * 同步应用实例信息最大线程数
      *
      * @return maximum number of threads to be used for replication.
      */
@@ -513,7 +513,7 @@ public interface EurekaServerConfig {
      * Get the time in milliseconds to try to replicate before dropping
      * replication events.
      *
-     * 执行单个同步应用对象信息状态任务最大时间
+     * 执行单个同步应用实例信息状态任务最大时间
      *
      * @return time in milliseconds
      */

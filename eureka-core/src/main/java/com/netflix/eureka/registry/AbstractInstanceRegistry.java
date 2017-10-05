@@ -69,7 +69,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
     /**
      * 租约映射
      * key1 ：应用名 {@link InstanceInfo#appName}
-     * key2 ：应用对象信息编号 {@link InstanceInfo#instanceId}
+     * key2 ：应用实例信息编号 {@link InstanceInfo#instanceId}
      * value ：租约
      */
     private final ConcurrentHashMap<String, Map<String, Lease<InstanceInfo>>> registry = new ConcurrentHashMap<String, Map<String, Lease<InstanceInfo>>>();
@@ -85,13 +85,13 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
     /**
      * 最近注册的调试队列
      * key ：添加时的时间戳
-     * value ：字符串 = 应用名(应用对象信息编号)
+     * value ：字符串 = 应用名(应用实例信息编号)
      */
     private final CircularQueue<Pair<Long, String>> recentRegisteredQueue;
     /**
      * 最近取消注册的调试队列
      * key ：添加时的时间戳
-     * value ：字符串 = 应用名(应用对象信息编号)
+     * value ：字符串 = 应用名(应用实例信息编号)
      */
     private final CircularQueue<Pair<Long, String>> recentCanceledQueue;
 
@@ -182,7 +182,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
     }
 
     /**
-     * 获得本地注册应用对象信息数量
+     * 获得本地注册应用实例信息数量
      *
      * @return 数量
      */
@@ -219,11 +219,12 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
      */
     public void register(InstanceInfo registrant, int leaseDuration, boolean isReplication) {
         try {
+            // TODO 为什么是读锁
             read.lock();
             Map<String, Lease<InstanceInfo>> gMap = registry.get(registrant.getAppName());
             // 增加 注册次数 到 监控
             REGISTER.increment(isReplication);
-            // 获得 应用对象信息 对应的 租约
+            // 获得 应用实例信息 对应的 租约
             if (gMap == null) {
                 final ConcurrentHashMap<String, Lease<InstanceInfo>> gNewMap = new ConcurrentHashMap<String, Lease<InstanceInfo>>();
                 gMap = registry.putIfAbsent(registrant.getAppName(), gNewMap); // 添加 应用
@@ -233,9 +234,9 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
             }
             Lease<InstanceInfo> existingLease = gMap.get(registrant.getId());
             // Retain the last dirty timestamp without overwriting it, if there is already a lease
-            if (existingLease != null && (existingLease.getHolder() != null)) { // TODO 芋艿：再看
-                Long existingLastDirtyTimestamp = existingLease.getHolder().getLastDirtyTimestamp();
-                Long registrationLastDirtyTimestamp = registrant.getLastDirtyTimestamp();
+            if (existingLease != null && (existingLease.getHolder() != null)) { // 已存在时，使用数据不一致的时间大的应用注册信息为有效的
+                Long existingLastDirtyTimestamp = existingLease.getHolder().getLastDirtyTimestamp(); // Server 注册的 InstanceInfo
+                Long registrationLastDirtyTimestamp = registrant.getLastDirtyTimestamp(); // Client 请求的 InstanceInfo
                 logger.debug("Existing lease found (existing={}, provided={}", existingLastDirtyTimestamp, registrationLastDirtyTimestamp);
 
                 // this is a > instead of a >= because if the timestamps are equal, we still take the remote transmitted
@@ -300,7 +301,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
             if (InstanceStatus.UP.equals(registrant.getStatus())) {
                 lease.serviceUp();
             }
-            // 设置 应用对象信息的操作类型 为 添加
+            // 设置 应用实例信息的操作类型 为 添加
             registrant.setActionType(ActionType.ADDED);
             // 添加到 最近租约变更记录队列
             recentlyChangedQueue.add(new RecentlyChangedItem(lease));
@@ -311,6 +312,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
             logger.info("Registered instance {}/{} with status {} (replication={})",
                     registrant.getAppName(), registrant.getId(), registrant.getStatus(), isReplication);
         } finally {
+            // 释放锁
             read.unlock();
         }
     }
@@ -532,7 +534,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
             } else {
                 // 设置 租约最后更新时间（续租）
                 lease.renew();
-                // 应用对象信息不存在
+                // 应用实例信息不存在
                 InstanceInfo info = lease.getHolder();
                 // Lease is always created with its instance info object.
                 // This log statement is provided as a safeguard, in case this invariant is violated.
@@ -1007,7 +1009,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
      * not exist locally or in remote regions.
      */
     public Applications getApplicationDeltasFromMultipleRegions(String[] remoteRegions) {
-        // 获得 过滤的应用对象信息所在的区域( region ) TODO 芋艿：可能不对
+        // 获得 过滤的应用实例信息所在的区域( region ) TODO 芋艿：可能不对
         if (null == remoteRegions) {
             remoteRegions = allKnownRemoteRegions; // null means all remote regions.
         }

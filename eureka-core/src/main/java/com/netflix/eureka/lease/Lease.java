@@ -86,7 +86,6 @@ public class Lease<T> {
         registrationTimestamp = System.currentTimeMillis();
         lastUpdateTimestamp = registrationTimestamp;
         duration = (durationInSecs * 1000);
-
     }
 
     /**
@@ -112,7 +111,7 @@ public class Lease<T> {
      * subsequent calls will be ignored.
      */
     public void serviceUp() {
-        if (serviceUpTimestamp == 0) {
+        if (serviceUpTimestamp == 0) { // 第一次有效
             serviceUpTimestamp = System.currentTimeMillis();
         }
     }

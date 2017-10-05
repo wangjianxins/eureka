@@ -29,7 +29,7 @@ import java.util.Map;
  * started quickly.The users have to override only a few methods to register
  * their instance with eureka server.
  *
- * Eureka 应用对象配置抽象基类
+ * Eureka 应用实例配置抽象基类
  *
  * @author Karthik Ranganathan
  */

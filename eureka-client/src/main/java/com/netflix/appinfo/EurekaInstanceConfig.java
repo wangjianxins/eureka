@@ -37,7 +37,7 @@ import java.util.Map;
  * </p>
  * // TODO 芋艿：疑问，这段 Note 的用途
  *
- * Eureka 应用对象配置接口
+ * Eureka 应用实例配置接口
  *
  * @author Karthik Ranganathan
  */
@@ -80,7 +80,6 @@ public interface EurekaInstanceConfig {
      * :( public API typos are the worst. I think this was meant to be "OnInit".
      *
      * 应用初始化后是否开启
-     * // TODO 芋艿：看看用途
      *
      * @return true to immediately start taking traffic, false otherwise.
      */
@@ -163,7 +162,7 @@ public interface EurekaInstanceConfig {
      * .
      * </p>
      *
-     * 契约过期时间，单位：秒
+     * 租约过期时间，单位：秒
      *
      * @return value indicating time in seconds.
      */

@@ -45,7 +45,7 @@ import static com.netflix.appinfo.PropertyBasedInstanceConfigConstants.*;
  * to <em>eureka-client.properties</em>.
  * </p>
  *
- * Eureka 基于配置文件的应用对象配置抽象基类
+ * Eureka 基于配置文件的应用实例配置抽象基类
  *
  * @author Karthik Ranganathan
  */

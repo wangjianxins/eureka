@@ -68,7 +68,7 @@ public interface EurekaClientConfig {
      * Indicates how often(in seconds) to replicate instance changes to be
      * replicated to the eureka server.
      *
-     * 向 Eureka-Server 同步应用对象信息变化频率，单位：秒
+     * 向 Eureka-Server 同步实例对象信息变化频率，单位：秒
      *
      * @return the instance replication interval in seconds.
      */
@@ -485,7 +485,7 @@ public interface EurekaClientConfig {
      * {@link #getRegistryFetchIntervalSeconds()}</em>
      * </p>
      *
-     * 是否过滤，只获取状态为开启( Up )的应用对象集合
+     * 是否过滤，只获取状态为开启( Up )的应用实例集合
      *
      * @return true to filter, false otherwise.
      */
@@ -591,7 +591,7 @@ public interface EurekaClientConfig {
      * {@link com.netflix.appinfo.ApplicationInfoManager#setInstanceStatus(com.netflix.appinfo.InstanceInfo.InstanceStatus)}
      * will trigger on-demand (but rate limited) register/updates to remote eureka servers
      *
-     * 是否同步应用对象状态到 Eureka-Server
+     * 是否同步应用实例状态到 Eureka-Server
      *
      * @return true or false for whether local status updates should be updated to remote servers on-demand
      */

@@ -174,9 +174,13 @@ public class DiscoveryClient implements EurekaClient {
      * 无实际业务用途，用于打 logger
      */
     private String appPathIdentifier;
-    // TODO 芋艿：事件监听器
+    /**
+     * 应用实例状态变更监听器
+     */
     private ApplicationInfoManager.StatusChangeListener statusChangeListener;
-
+    /**
+     * 应用实例信息复制器
+     */
     private InstanceInfoReplicator instanceInfoReplicator;
 
     private volatile int registrySize = 0;
@@ -1299,6 +1303,7 @@ public class DiscoveryClient implements EurekaClient {
                     ),
                     renewalIntervalInSecs, TimeUnit.SECONDS);
 
+            // 创建 应用实例信息复制器
             // InstanceInfo replicator
             instanceInfoReplicator = new InstanceInfoReplicator(
                     this,
@@ -1306,6 +1311,7 @@ public class DiscoveryClient implements EurekaClient {
                     clientConfig.getInstanceInfoReplicationIntervalSeconds(),
                     2); // burstSize
 
+            // 创建 应用实例状态变更监听器
             statusChangeListener = new ApplicationInfoManager.StatusChangeListener() {
                 @Override
                 public String getId() {
@@ -1325,10 +1331,12 @@ public class DiscoveryClient implements EurekaClient {
                 }
             };
 
+            // 注册 应用实例状态变更监听器
             if (clientConfig.shouldOnDemandUpdateStatusChange()) {
-                applicationInfoManager.registerStatusChangeListener(statusChangeListener); // TODO 芋艿，监听
+                applicationInfoManager.registerStatusChangeListener(statusChangeListener);
             }
 
+            // 开启 应用实例信息复制器
             instanceInfoReplicator.start(clientConfig.getInitialInstanceInfoReplicationIntervalSeconds());
         } else {
             logger.info("Not registering with Eureka server per configuration");
@@ -1397,9 +1405,11 @@ public class DiscoveryClient implements EurekaClient {
      * isDirty flag on the instanceInfo is set to true
      */
     void refreshInstanceInfo() {
+        // 刷新 数据中心信息
         applicationInfoManager.refreshDataCenterInfoIfRequired();
+        // 刷新 租约信息
         applicationInfoManager.refreshLeaseInfoIfRequired();
-
+        // 健康检查
         InstanceStatus status;
         try {
             status = getHealthCheckHandler().getStatus(instanceInfo.getStatus());
@@ -1407,7 +1417,6 @@ public class DiscoveryClient implements EurekaClient {
             logger.warn("Exception from healthcheckHandler.getStatus, setting status to DOWN", e);
             status = InstanceStatus.DOWN;
         }
-
         if (null != status) {
             applicationInfoManager.setInstanceStatus(status);
         }

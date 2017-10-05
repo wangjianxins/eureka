@@ -45,7 +45,7 @@ public enum EurekaMonitors {
      */
     RENEW("renewCounter", "Number of total renews seen since startup"),
     /**
-     * Eureka-Server 取消注册应用对象信息次数
+     * Eureka-Server 取消注册应用实例信息次数
      */
     CANCEL("cancelCounter", "Number of total cancels seen since startup"),
     GET_ALL_CACHE_MISS("getAllCacheMissCounter", "Number of total registery queries seen since startup"),
@@ -63,17 +63,17 @@ public enum EurekaMonitors {
             "Number of total registry queries with remote regions, seen since startup"),
     GET_APPLICATION("getApplicationCounter", "Number of total application queries seen since startup"),
     /**
-     * Eureka-Server 注册应用对象信息次数
+     * Eureka-Server 注册应用实例信息次数
      */
     REGISTER("registerCounter", "Number of total registers seen since startup"),
     EXPIRED("expiredCounter", "Number of total expired leases since startup"),
     /**
-     * Eureka-Server 应用对象信息状态变更次数
+     * Eureka-Server 应用实例信息状态变更次数
      */
     STATUS_UPDATE("statusUpdateCounter", "Number of total admin status updates since startup"),
     STATUS_OVERRIDE_DELETE("statusOverrideDeleteCounter", "Number of status override removals"),
     /**
-     * Eureka-Server 取消注册应用对象信息不存在的次数
+     * Eureka-Server 取消注册应用实例信息不存在的次数
      */
     CANCEL_NOT_FOUND("cancelNotFoundCounter", "Number of total cancel requests on non-existing instance since startup"),
     /**

@@ -50,7 +50,7 @@ public class DefaultEurekaServerContext implements EurekaServerContext {
      */
     private final ServerCodecs serverCodecs;
     /**
-     * 应用对象信息的注册表
+     * 应用实例信息的注册表
      */
     private final PeerAwareInstanceRegistry registry;
     /**
@@ -58,7 +58,7 @@ public class DefaultEurekaServerContext implements EurekaServerContext {
      */
     private final PeerEurekaNodes peerEurekaNodes;
     /**
-     * 应用对象信息管理器
+     * 应用实例信息管理器
      */
     private final ApplicationInfoManager applicationInfoManager;
 
@@ -82,7 +82,7 @@ public class DefaultEurekaServerContext implements EurekaServerContext {
 
         // 启动 Eureka-Server 集群节点集合（复制）
         peerEurekaNodes.start();
-        // 初始化 应用对象信息的注册表
+        // 初始化 应用实例信息的注册表
         registry.init(peerEurekaNodes);
 
         logger.info("Initialized");

@@ -44,7 +44,7 @@ import java.util.function.Function;
  * serialized as specified by the <code>@Serializer</code>.
  * </p>
  *
- * 应用对象信息
+ * 应用实例信息
  *
  * @author Karthik Ranganathan, Greg Kim
  */
@@ -1199,6 +1199,7 @@ public class InstanceInfo {
         if (this.status != status) {
             InstanceStatus prev = this.status;
             this.status = status;
+            // 设置 应用实例信息 数据一致
             setIsDirty();
             return prev;
         }
