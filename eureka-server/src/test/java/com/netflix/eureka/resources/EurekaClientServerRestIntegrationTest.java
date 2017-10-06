@@ -67,8 +67,9 @@ public class EurekaClientServerRestIntegrationTest {
     @BeforeClass
     public static void setUp() throws Exception {
         injectEurekaConfiguration();
-        startServer();
         createEurekaServerConfig();
+
+        startServer();
 
         httpClientFactory = JerseyEurekaHttpClientFactory.newBuilder()
                 .withClientName("testEurekaClient")
@@ -317,6 +318,9 @@ public class EurekaClientServerRestIntegrationTest {
         when(eurekaServerConfig.getMinThreadsForPeerReplication()).thenReturn(1);
         when(eurekaServerConfig.getMaxThreadsForPeerReplication()).thenReturn(1);
         when(eurekaServerConfig.shouldBatchReplication()).thenReturn(true);
+
+        when(eurekaServerConfig.shouldEnableSelfPreservation()).thenReturn(false); // 自我保护
+        System.setProperty("eureka.enableSelfPreservation", "false");
 
         // Peer node connectivity (used by JerseyReplicationClient)
         when(eurekaServerConfig.getPeerNodeTotalConnections()).thenReturn(1);

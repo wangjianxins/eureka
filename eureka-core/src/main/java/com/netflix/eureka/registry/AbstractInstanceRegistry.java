@@ -121,6 +121,9 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
      */
     private final MeasuredRate renewsLastMin;
 
+    /**
+     * 清理租约过期任务
+     */
     private final AtomicReference<EvictionTask> evictionTaskRef = new AtomicReference<EvictionTask>();
 
     protected String[] allKnownRemoteRegions = EMPTY_STR_ARRAY;
@@ -689,23 +692,26 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
             if (leaseMap != null) {
                 for (Entry<String, Lease<InstanceInfo>> leaseEntry : leaseMap.entrySet()) {
                     Lease<InstanceInfo> lease = leaseEntry.getValue();
-                    if (lease.isExpired(additionalLeaseMs) && lease.getHolder() != null) {
+                    if (lease.isExpired(additionalLeaseMs) && lease.getHolder() != null) { // 过期
                         expiredLeases.add(lease);
                     }
                 }
             }
         }
 
+        // 计算 最大允许清理租约数量
         // To compensate for GC pauses or drifting local time, we need to use current registry size as a base for
         // triggering self-preservation. Without that we would wipe out full registry.
         int registrySize = (int) getLocalRegistrySize();
         int registrySizeThreshold = (int) (registrySize * serverConfig.getRenewalPercentThreshold());
         int evictionLimit = registrySize - registrySizeThreshold;
 
+        // 计算 清理租约数量
         int toEvict = Math.min(expiredLeases.size(), evictionLimit);
         if (toEvict > 0) {
             logger.info("Evicting {} items (expired={}, evictionLimit={})", toEvict, expiredLeases.size(), evictionLimit);
 
+            // 逐个过期
             Random random = new Random(System.currentTimeMillis());
             for (int i = 0; i < toEvict; i++) {
                 // Pick a random item (Knuth shuffle algorithm)
@@ -1328,6 +1334,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
 
     protected void postInit() {
         renewsLastMin.start();
+        // 初始化 清理租约过期任务
         if (evictionTaskRef.get() != null) {
             evictionTaskRef.get().cancel();
         }
@@ -1353,17 +1360,22 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
     }
 
     /**
-     *
+     * 租约过期任务
      */
     /* visible for testing */ class EvictionTask extends TimerTask {
 
-        private final AtomicLong lastExecutionNanosRef = new AtomicLong(0l);
+        /**
+         * 最后任务执行时间
+         */
+        private final AtomicLong lastExecutionNanosRef = new AtomicLong(0L);
 
         @Override
         public void run() {
             try {
+                // 获取 补偿时间毫秒数
                 long compensationTimeMs = getCompensationTimeMs();
                 logger.info("Running the evict task with compensationTime {}ms", compensationTimeMs);
+                // 清理过期租约逻辑
                 evict(compensationTimeMs);
             } catch (Throwable e) {
                 logger.error("Could not run the evict task", e);
@@ -1379,13 +1391,12 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
         long getCompensationTimeMs() {
             long currNanos = getCurrentTimeNano();
             long lastNanos = lastExecutionNanosRef.getAndSet(currNanos);
-            if (lastNanos == 0l) {
-                return 0l;
+            if (lastNanos == 0L) {
+                return 0L;
             }
-
             long elapsedMs = TimeUnit.NANOSECONDS.toMillis(currNanos - lastNanos);
             long compensationTime = elapsedMs - serverConfig.getEvictionIntervalTimerInMs();
-            return compensationTime <= 0l ? 0l : compensationTime;
+            return compensationTime <= 0L ? 0L : compensationTime;
         }
 
         long getCurrentTimeNano() {  // for testing
