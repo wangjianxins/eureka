@@ -15,12 +15,12 @@
  */
 package com.netflix.eureka.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for getting a count in last X milliseconds.
@@ -28,11 +28,23 @@ import org.slf4j.LoggerFactory;
  * @author Karthik Ranganathan,Greg Kim
  */
 public class MeasuredRate {
-    private static final Logger logger = LoggerFactory.getLogger(MeasuredRate.class);
-    private final AtomicLong lastBucket = new AtomicLong(0);
-    private final AtomicLong currentBucket = new AtomicLong(0);
 
+    private static final Logger logger = LoggerFactory.getLogger(MeasuredRate.class);
+    /**
+     * 上一个间隔次数
+     */
+    private final AtomicLong lastBucket = new AtomicLong(0);
+    /**
+     * 当前间隔次数
+     */
+    private final AtomicLong currentBucket = new AtomicLong(0);
+    /**
+     * 间隔
+     */
     private final long sampleInterval;
+    /**
+     * 定时器
+     */
     private final Timer timer;
 
     private volatile boolean isActive;

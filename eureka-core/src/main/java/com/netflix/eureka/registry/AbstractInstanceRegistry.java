@@ -103,16 +103,34 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
     private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     private final Lock read = readWriteLock.readLock();
     private final Lock write = readWriteLock.writeLock();
+
+    /**
+     * 自我保护机锁
+     *
+     * 当计算如下参数时使用：
+     *  1. {@link #numberOfRenewsPerMinThreshold}
+     *  2. {@link #expectedNumberOfRenewsPerMin}
+     */
     protected final Object lock = new Object();
 
     private Timer deltaRetentionTimer = new Timer("Eureka-DeltaRetentionTimer", true);
     private Timer evictionTimer = new Timer("Eureka-EvictionTimer", true);
+
+    /**
+     * 续租每分钟次数
+     */
     private final MeasuredRate renewsLastMin;
 
     private final AtomicReference<EvictionTask> evictionTaskRef = new AtomicReference<EvictionTask>();
 
     protected String[] allKnownRemoteRegions = EMPTY_STR_ARRAY;
+    /**
+     * 期望最小每分钟续约次数
+     */
     protected volatile int numberOfRenewsPerMinThreshold;
+    /**
+     * 期望最大每分钟续约次数
+     */
     protected volatile int expectedNumberOfRenewsPerMin;
 
     /**
@@ -249,7 +267,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                 }
             } else {
                 // The lease does not exist and hence it is a new registration
-                // TODO 芋艿：可能和限流或者自我保护有关
+                // 【自我保护机制】增加 `numberOfRenewsPerMinThreshold` 、`expectedNumberOfRenewsPerMin`
                 synchronized (lock) {
                     if (this.expectedNumberOfRenewsPerMin > 0) {
                         // Since the client wants to cancel it, reduce the threshold
@@ -343,6 +361,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
      */
     protected boolean internalCancel(String appName, String id, boolean isReplication) {
         try {
+            // 获得锁 TODO 芋艿：疑问
             read.lock();
             // 增加 取消注册次数 到 监控
             CANCEL.increment(isReplication);
@@ -365,7 +384,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
             if (leaseToCancel == null) {
                 CANCEL_NOT_FOUND.increment(isReplication); // 添加 取消注册不存在 到 监控
                 logger.warn("DS: Registry: cancel failed because Lease is not registered for: {}/{}", appName, id);
-                return false;
+                return false; // 失败
             } else {
                 // 设置 租约的取消注册时间戳
                 leaseToCancel.cancel();
@@ -383,9 +402,10 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                 // 设置 响应缓存 过期
                 invalidateCache(appName, vip, svip);
                 logger.info("Cancelled instance {}/{} (replication={})", appName, id, isReplication);
-                return true;
+                return true; // 成功
             }
         } finally {
+            // 释放锁
             read.unlock();
         }
     }
@@ -435,7 +455,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                     instanceInfo.setStatusWithoutDirty(overriddenInstanceStatus);
                 }
             }
-            // TODO 芋艿：可能和自我保护
+            // 新增 续租每分钟次数
             renewsLastMin.increment();
             // 设置 租约最后更新时间（续租）
             leaseToRenew.renew();

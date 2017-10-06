@@ -277,13 +277,13 @@ public class InstanceResource {
     @DELETE
     public Response cancelLease(
             @HeaderParam(PeerEurekaNode.HEADER_REPLICATION) String isReplication) {
-        boolean isSuccess = registry.cancel(app.getName(), id,
-                "true".equals(isReplication));
+        // 下线
+        boolean isSuccess = registry.cancel(app.getName(), id, "true".equals(isReplication));
 
-        if (isSuccess) {
+        if (isSuccess) { // 下线成功
             logger.debug("Found (Cancel): " + app.getName() + " - " + id);
             return Response.ok().build();
-        } else {
+        } else { // 下线成功
             logger.info("Not Found (Cancel): " + app.getName() + " - " + id);
             return Response.status(Status.NOT_FOUND).build();
         }

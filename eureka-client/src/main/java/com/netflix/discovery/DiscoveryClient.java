@@ -921,8 +921,8 @@ public class DiscoveryClient implements EurekaClient {
 
             // If APPINFO was registered
             if (applicationInfoManager != null
-                    && clientConfig.shouldRegisterWithEureka()
-                    && clientConfig.shouldUnregisterOnShutdown()) {
+                    && clientConfig.shouldRegisterWithEureka() // eureka.registration.enabled = true
+                    && clientConfig.shouldUnregisterOnShutdown()) { // eureka.shouldUnregisterOnShutdown = true
                 applicationInfoManager.setInstanceStatus(InstanceStatus.DOWN);
                 unregister();
             }
