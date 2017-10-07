@@ -786,7 +786,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
      */
     public Applications getApplications() {
         boolean disableTransparentFallback = serverConfig.disableTransparentFallbackToOtherRegion();
-        if (disableTransparentFallback) {
+        if (disableTransparentFallback) { // TODO[0009]：RemoteRegionRegistry
             return getApplicationsFromLocalRegionOnly();
         } else {
             return getApplicationsFromAllRemoteRegions();  // Behavior of falling back to remote region can be disabled.
@@ -828,17 +828,16 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
      * from remote regions can be only for certain whitelisted apps as explained above.
      */
     public Applications getApplicationsFromMultipleRegions(String[] remoteRegions) {
-
+        // TODO[0009]：RemoteRegionRegistry
         boolean includeRemoteRegion = null != remoteRegions && remoteRegions.length != 0;
-
         logger.debug("Fetching applications registry with remote regions: {}, Regions argument {}",
                 includeRemoteRegion, Arrays.toString(remoteRegions));
-
         if (includeRemoteRegion) {
             GET_ALL_WITH_REMOTE_REGIONS_CACHE_MISS.increment();
         } else {
             GET_ALL_CACHE_MISS.increment();
         }
+        // 获得获得注册的应用集合
         Applications apps = new Applications();
         apps.setVersion(1L);
         for (Entry<String, Map<String, Lease<InstanceInfo>>> entry : registry.entrySet()) {
@@ -857,6 +856,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                 apps.addApplication(app);
             }
         }
+        // TODO[0009]：RemoteRegionRegistry
         if (includeRemoteRegion) {
             for (String remoteRegion : remoteRegions) {
                 RemoteRegionRegistry remoteRegistry = regionNameVSRemoteRegistry.get(remoteRegion);
@@ -886,6 +886,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                 }
             }
         }
+        // 设置 应用集合 hashcode
         apps.setAppsHashCode(apps.getReconcileHashCode());
         return apps;
     }

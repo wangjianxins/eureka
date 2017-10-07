@@ -19,12 +19,35 @@ public class Key {
         Application, VIP, SVIP
     }
 
+    /**
+     * 实体名
+     */
     private final String entityName;
+    /**
+     * TODO[0009]：RemoteRegionRegistry
+     */
     private final String[] regions;
+    /**
+     * 请求参数类型
+     */
     private final KeyType requestType;
+    /**
+     * 请求 API 版本号
+     */
     private final Version requestVersion;
+    /**
+     * hashKey
+     */
     private final String hashKey;
+    /**
+     * 实体类型
+     *
+     * {@link EntityType}
+     */
     private final EntityType entityType;
+    /**
+     * {@link EurekaAccept}
+     */
     private final EurekaAccept eurekaAccept;
 
     public Key(EntityType entityType, String entityName, KeyType type, Version v, EurekaAccept eurekaAccept) {

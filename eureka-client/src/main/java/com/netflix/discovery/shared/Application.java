@@ -256,6 +256,7 @@ public class Application {
             }
 
         }
+        // 打乱
         Collections.shuffle(instanceInfoList, shuffleRandom);
         this.shuffledInstances.set(instanceInfoList);
     }
