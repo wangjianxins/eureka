@@ -16,19 +16,6 @@
 
 package com.netflix.discovery.shared;
 
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -43,12 +30,20 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * The application class holds the list of instances for a particular
  * application.
  *
  * @author Karthik Ranganathan
  *
+ * 应用
+ *
+ * 一个应用下，可以有多个应用实例对象
  */
 @Serializer("com.netflix.discovery.converters.EntityBodyConverter")
 @XStreamAlias("application")
@@ -64,16 +59,29 @@ public class Application {
                 + shuffledInstances + ", instancesMap=" + instancesMap + "]";
     }
 
+    /**
+     * 应用名
+     */
     private String name;
 
     @XStreamOmitField
     private volatile boolean isDirty = false;
 
+    /**
+     * 应用实例集合
+     */
     @XStreamImplicit
     private final Set<InstanceInfo> instances;
 
+    /**
+     * 打乱的应用实例集合{@link #instances}
+     */
     private final AtomicReference<List<InstanceInfo>> shuffledInstances;
 
+    /**
+     * 应用实例映射
+     * key：应用实例编号 {@link InstanceInfo#instanceId}
+     */
     private final Map<String, InstanceInfo> instancesMap;
 
     public Application() {
