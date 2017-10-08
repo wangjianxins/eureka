@@ -966,23 +966,24 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
      */
     @Deprecated
     public Applications getApplicationDeltas() {
-        // TODO 监控
+        // 添加 增量获取次数 到 监控
         GET_ALL_CACHE_MISS_DELTA.increment();
+        // 初始化 变化的应用集合
         Applications apps = new Applications();
         apps.setVersion(responseCache.getVersionDelta().get());
         Map<String, Application> applicationInstancesMap = new HashMap<String, Application>();
         try {
+            // 获取写锁 TODO why？
             write.lock();
+            // 获取 最近租约变更记录队列
             Iterator<RecentlyChangedItem> iter = this.recentlyChangedQueue.iterator();
-            logger.debug("The number of elements in the delta queue is :"
-                    + this.recentlyChangedQueue.size());
+            logger.debug("The number of elements in the delta queue is :" + this.recentlyChangedQueue.size());
+            // 拼装 变化的应用集合
             while (iter.hasNext()) {
                 Lease<InstanceInfo> lease = iter.next().getLeaseInfo();
                 InstanceInfo instanceInfo = lease.getHolder();
                 Object[] args = {instanceInfo.getId(), instanceInfo.getStatus().name(), instanceInfo.getActionType().name()};
-                logger.debug(
-                        "The instance id %s is found with status %s and actiontype %s",
-                        args);
+                logger.debug("The instance id %s is found with status %s and actiontype %s", args);
                 Application app = applicationInstancesMap.get(instanceInfo.getAppName());
                 if (app == null) {
                     app = new Application(instanceInfo.getAppName());
@@ -992,8 +993,8 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                 app.addInstance(decorateInstanceInfo(lease));
             }
 
+            // TODO[0009]：RemoteRegionRegistry
             boolean disableTransparentFallback = serverConfig.disableTransparentFallbackToOtherRegion();
-
             if (!disableTransparentFallback) {
                 Applications allAppsInLocalRegion = getApplications(false);
 
@@ -1009,6 +1010,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                 }
             }
 
+            // 获取全量应用集合，通过它计算一致性哈希值
             Applications allApps = getApplications(!disableTransparentFallback);
             apps.setAppsHashCode(allApps.getReconcileHashCode());
             return apps;
@@ -1466,9 +1468,10 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
             public void run() {
                 Iterator<RecentlyChangedItem> it = recentlyChangedQueue.iterator();
                 while (it.hasNext()) {
-                    if (it.next().getLastUpdateTime() <
-                            System.currentTimeMillis() - serverConfig.getRetentionTimeInMSInDeltaQueue()) {
+                    RecentlyChangedItem item = it.next();
+                    if (item.getLastUpdateTime() < System.currentTimeMillis() - serverConfig.getRetentionTimeInMSInDeltaQueue()) {
                         it.remove();
+System.err.println("[getDeltaRetentionTask]instance_id：" + item.getLeaseInfo().getHolder().getId()); // 芋艿，调试用途，请无视。debugger
                     } else {
                         break;
                     }

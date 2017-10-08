@@ -274,7 +274,7 @@ public interface EurekaServerConfig {
      * Get the time for which the delta information should be cached for the
      * clients to retrieve the value without missing it.
      *
-     * TODO 待定
+     * 租约变更记录过期时长，单位：毫秒。
      *
      * @return time in milliseconds
      */
@@ -283,6 +283,8 @@ public interface EurekaServerConfig {
     /**
      * Get the time interval with which the clean up task should wake up and
      * check for expired delta information.
+     *
+     * 移除队列里过期的租约变更记录的定时任务执行频率，单位：毫秒。
      *
      * @return time in milliseconds.
      */

@@ -25,6 +25,7 @@ import com.netflix.discovery.DefaultEurekaClientConfig;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
+import com.netflix.discovery.shared.Application;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -70,6 +71,34 @@ public class ExampleEurekaClient {
         // initialize the client
         // this is the vip address for the example service to talk to as defined in conf/sample-eureka-service.properties
 //        String vipAddress = "sampleservice.mydomain.net";
+
+//        try {
+//            Thread.sleep(Long.MAX_VALUE);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
+        while (true) { // 用于证明一致性哈希算法
+            if (false) {
+                break;
+            }
+
+            System.out.println("==========");
+            System.out.println(eurekaClient.getApplications().getAppsHashCode());
+            for (Application application : eurekaClient.getApplications().getRegisteredApplications()) {
+                for (InstanceInfo info : application.getInstances()) {
+                    System.out.println(info.getId());
+                }
+            }
+//            System.out.println(eurekaClient.getApplication("eureka").toString());
+
+            try {
+                Thread.sleep(10 * 1000L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
         String vipAddress = "eureka.mydomain.net";
 
         InstanceInfo nextServerInfo = null;
@@ -155,9 +184,10 @@ public class ExampleEurekaClient {
         System.setProperty("eureka.numberRegistrySyncRetries", "0");
 
 
+        System.setProperty("eureka.client.refresh.interval", "1");
 
 
-//        ConfigurationManager.getConfigInstance().setProperty("eureka.environment", "production");
+//    eureka    ConfigurationManager.getConfigInstance().setProperty("eureka.environment", "production");
 //        System.setProperty("eureka", "production");
     }
 

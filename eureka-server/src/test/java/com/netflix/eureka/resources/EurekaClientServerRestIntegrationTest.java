@@ -67,9 +67,11 @@ public class EurekaClientServerRestIntegrationTest {
     @BeforeClass
     public static void setUp() throws Exception {
         injectEurekaConfiguration();
-        createEurekaServerConfig();
 
         startServer();
+
+        createEurekaServerConfig();
+
 
         httpClientFactory = JerseyEurekaHttpClientFactory.newBuilder()
                 .withClientName("testEurekaClient")
@@ -225,6 +227,16 @@ public class EurekaClientServerRestIntegrationTest {
         System.setProperty("eureka.awsAccessId", "fake_aws_access_id");
         System.setProperty("eureka.awsSecretKey", "fake_aws_secret_key");
         System.setProperty("eureka.numberRegistrySyncRetries", "0");
+
+        int type = 1;
+
+        if (type == 1) { // 测试一致性哈希算法有效性，case 1
+//            System.setProperty("registration.enabled", "false");
+            System.setProperty("eureka.retentionTimeInMSInDeltaQueue", "1");
+            System.setProperty("eureka.deltaRetentionTimerIntervalInMs", "1");
+            System.setProperty("eureka.shouldUseReadOnlyResponseCache", "false");
+            System.setProperty("eureka.waitTimeInMsWhenSyncEmpty", "1");
+        }
     }
 
     private static void removeEurekaConfiguration() {

@@ -49,6 +49,9 @@ public enum EurekaMonitors {
      */
     CANCEL("cancelCounter", "Number of total cancels seen since startup"),
     GET_ALL_CACHE_MISS("getAllCacheMissCounter", "Number of total registery queries seen since startup"),
+    /**
+     * Eureka-Server
+     */
     GET_ALL_CACHE_MISS_DELTA("getAllCacheMissDeltaCounter",
             "Number of total registery queries for delta seen since startup"),
     GET_ALL_WITH_REMOTE_REGIONS_CACHE_MISS("getAllWithRemoteRegionCacheMissCounter",
