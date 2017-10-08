@@ -74,7 +74,7 @@ public class Applications {
     private static final String STATUS_DELIMITER = "_";
 
     /**
-     * 应用集合信息 hashcode
+     * 一致性哈希码
      */
     private String appsHashCode;
     @Deprecated
@@ -236,8 +236,10 @@ public class Applications {
      */
     @JsonIgnore
     public String getReconcileHashCode() {
+        // 计数集合 key：应用实例状态
         TreeMap<String, AtomicInteger> instanceCountMap = new TreeMap<String, AtomicInteger>();
         populateInstanceCountMap(instanceCountMap);
+        // 计算 hashcode
         return getReconcileHashCode(instanceCountMap);
     }
 
@@ -270,8 +272,8 @@ public class Applications {
     public static String getReconcileHashCode(Map<String, AtomicInteger> instanceCountMap) {
         StringBuilder reconcileHashCode = new StringBuilder(75);
         for (Map.Entry<String, AtomicInteger> mapEntry : instanceCountMap.entrySet()) {
-            reconcileHashCode.append(mapEntry.getKey()).append(STATUS_DELIMITER).append(mapEntry.getValue().get())
-                    .append(STATUS_DELIMITER);
+            reconcileHashCode.append(mapEntry.getKey()).append(STATUS_DELIMITER) // status
+                    .append(mapEntry.getValue().get()).append(STATUS_DELIMITER); // count
         }
         return reconcileHashCode.toString();
     }

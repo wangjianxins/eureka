@@ -367,13 +367,13 @@ public class InstanceInfo {
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode() { // 只使用 ID 计算 hashcode
         String id = getId();
         return (id == null) ? 31 : (id.hashCode() + 31);
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(Object obj) { // 只对比 ID
         if (this == obj) {
             return true;
         }
