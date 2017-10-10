@@ -76,6 +76,10 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
 
     protected Map<String, RemoteRegionRegistry> regionNameVSRemoteRegistry = new HashMap<String, RemoteRegionRegistry>();
 
+    /**
+     * 应用实例覆盖状态映射
+     * key：应用实例编号
+     */
     protected final ConcurrentMap<String, InstanceStatus> overriddenInstanceStatusMap = CacheBuilder
             .newBuilder().initialCapacity(500)
             .expireAfterAccess(1, TimeUnit.HOURS)
@@ -296,7 +300,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                         System.currentTimeMillis(),
                         registrant.getAppName() + "(" + registrant.getId() + ")"));
             }
-            // TODO 芋艿
+            // 添加到 应用实例覆盖状态映射（Eureka-Server 初始化使用）
             // This is where the initial state transfer of overridden status happens
             if (!InstanceStatus.UNKNOWN.equals(registrant.getOverriddenStatus())) {
                 logger.debug("Found overridden status {} for instance {}. Checking to see if needs to be add to the "
@@ -306,15 +310,17 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                     overriddenInstanceStatusMap.put(registrant.getId(), registrant.getOverriddenStatus());
                 }
             }
+            // 设置 应用实例覆盖状态
             InstanceStatus overriddenStatusFromMap = overriddenInstanceStatusMap.get(registrant.getId());
             if (overriddenStatusFromMap != null) {
                 logger.info("Storing overridden status {} from map", overriddenStatusFromMap);
                 registrant.setOverriddenStatus(overriddenStatusFromMap);
             }
 
-            // TODO 芋艿
+            // 获得 应用实例状态
             // Set the status based on the overridden status rules
             InstanceStatus overriddenInstanceStatus = getOverriddenInstanceStatus(registrant, existingLease, isReplication);
+            // 设置 应用实例状态
             registrant.setStatusWithoutDirty(overriddenInstanceStatus);
 
             // 设置 租约的开始服务的时间戳（只有第一次有效）
@@ -378,7 +384,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
             synchronized (recentCanceledQueue) {
                 recentCanceledQueue.add(new Pair<Long, String>(System.currentTimeMillis(), appName + "(" + id + ")"));
             }
-            // TODO 芋艿：看不懂
+            // 移除 应用实例覆盖状态映射
             InstanceStatus instanceStatus = overriddenInstanceStatusMap.remove(id);
             if (instanceStatus != null) {
                 logger.debug("Removed instance id {} from the overridden map which has value {}", id, instanceStatus.name());
@@ -437,15 +443,17 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
             InstanceInfo instanceInfo = leaseToRenew.getHolder();
             if (instanceInfo != null) {
                 // touchASGCache(instanceInfo.getASGName());
-                // TODO 芋艿：over status
+                // 获得 应用实例状态
                 InstanceStatus overriddenInstanceStatus = this.getOverriddenInstanceStatus(
                         instanceInfo, leaseToRenew, isReplication);
+                // 应用实例状态未知，无法续约
                 if (overriddenInstanceStatus == InstanceStatus.UNKNOWN) {
                     logger.info("Instance status UNKNOWN possibly due to deleted override for instance {}"
                             + "; re-register required", instanceInfo.getId());
                     RENEW_NOT_FOUND.increment(isReplication);
                     return false;
                 }
+                // 设置 应用实例状态
                 if (!instanceInfo.getStatus().equals(overriddenInstanceStatus)) {
                     Object[] args = {
                             instanceInfo.getStatus().name(),
@@ -542,8 +550,9 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                                 InstanceStatus newStatus, String lastDirtyTimestamp,
                                 boolean isReplication) {
         try {
+            // TODO  为什么是读锁
             read.lock();
-            // 添加 状态变更次数 到 监控
+            // 添加 覆盖状态变更次数 到 监控
             STATUS_UPDATE.increment(isReplication);
             // 获得 租约
             Map<String, Lease<InstanceInfo>> gMap = registry.get(appName);
@@ -557,7 +566,8 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
             } else {
                 // 设置 租约最后更新时间（续租）
                 lease.renew();
-                // 应用实例信息不存在
+
+                // 应用实例信息不存在( 防御型编程 )
                 InstanceInfo info = lease.getHolder();
                 // Lease is always created with its instance info object.
                 // This log statement is provided as a safeguard, in case this invariant is violated.
@@ -571,14 +581,16 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                     if (InstanceStatus.UP.equals(newStatus)) {
                         lease.serviceUp();
                     }
-                    // TODO override status
+                    // 添加到 应用实例覆盖状态映射
                     // This is NAC overridden status
                     overriddenInstanceStatusMap.put(id, newStatus);
+                    // 设置 应用实例覆盖状态
                     // Set it for transfer of overridden status to replica on
                     // replica start up
                     info.setOverriddenStatus(newStatus);
-                    // TODO 集群
+                    // 设置 应用实例信息 数据不一致时间
                     long replicaDirtyTimestamp = 0;
+                    // 设置 应用实例状态
                     info.setStatusWithoutDirty(newStatus);
                     if (lastDirtyTimestamp != null) {
                         replicaDirtyTimestamp = Long.valueOf(lastDirtyTimestamp);
@@ -591,7 +603,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                     // 添加到 最近租约变更记录队列
                     info.setActionType(ActionType.MODIFIED);
                     recentlyChangedQueue.add(new RecentlyChangedItem(lease));
-                    // TODO 芋艿
+                    // 设置 最后更新时间
                     info.setLastUpdatedTimestamp();
                     // 设置 响应缓存 过期
                     invalidateCache(appName, info.getVIPAddress(), info.getSecureVipAddress());
@@ -599,6 +611,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                 return true;
             }
         } finally {
+            // 释放锁
             read.unlock();
         }
     }
@@ -620,29 +633,39 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                                         String lastDirtyTimestamp,
                                         boolean isReplication) {
         try {
+            // TODO  为什么是读锁
             read.lock();
+            // 添加 覆盖状态删除次数 到 监控
             STATUS_OVERRIDE_DELETE.increment(isReplication);
+            // 获得 租约
             Map<String, Lease<InstanceInfo>> gMap = registry.get(appName);
             Lease<InstanceInfo> lease = null;
             if (gMap != null) {
                 lease = gMap.get(id);
             }
+            // 租约不存在
             if (lease == null) {
                 return false;
             } else {
+                // 设置 租约最后更新时间（续租）
                 lease.renew();
-                InstanceInfo info = lease.getHolder();
 
+                // 应用实例信息不存在( 防御型编程 )
+                InstanceInfo info = lease.getHolder();
                 // Lease is always created with its instance info object.
                 // This log statement is provided as a safeguard, in case this invariant is violated.
                 if (info == null) {
                     logger.error("Found Lease without a holder for instance id {}", id);
                 }
 
+                // 移除 应用实例覆盖状态
                 InstanceStatus currentOverride = overriddenInstanceStatusMap.remove(id);
                 if (currentOverride != null && info != null) {
+                    // 设置 应用实例覆盖状态
                     info.setOverriddenStatus(InstanceStatus.UNKNOWN);
+                    // 设置 应用实例状态
                     info.setStatusWithoutDirty(newStatus);
+                    // 设置 应用实例信息 数据不一致时间
                     long replicaDirtyTimestamp = 0;
                     if (lastDirtyTimestamp != null) {
                         replicaDirtyTimestamp = Long.valueOf(lastDirtyTimestamp);
@@ -652,14 +675,18 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                     if (replicaDirtyTimestamp > info.getLastDirtyTimestamp()) {
                         info.setLastDirtyTimestamp(replicaDirtyTimestamp);
                     }
+                    // 添加到 最近租约变更记录队列
                     info.setActionType(ActionType.MODIFIED);
                     recentlyChangedQueue.add(new RecentlyChangedItem(lease));
+                    // 设置 最后更新时间
                     info.setLastUpdatedTimestamp();
+                    // 设置 响应缓存 过期
                     invalidateCache(appName, info.getVIPAddress(), info.getSecureVipAddress());
                 }
                 return true;
             }
         } finally {
+            // 释放锁
             read.unlock();
         }
     }

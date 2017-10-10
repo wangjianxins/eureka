@@ -160,14 +160,18 @@ public class InstanceResource {
             @HeaderParam(PeerEurekaNode.HEADER_REPLICATION) String isReplication,
             @QueryParam("lastDirtyTimestamp") String lastDirtyTimestamp) {
         try {
+            // 应用实例不存在
             if (registry.getInstanceByAppAndId(app.getName(), id) == null) {
                 logger.warn("Instance not found: {}/{}", app.getName(), id);
                 return Response.status(Status.NOT_FOUND).build();
             }
+
+            // 覆盖状态更新
             boolean isSuccess = registry.statusUpdate(app.getName(), id,
                     InstanceStatus.valueOf(newStatus), lastDirtyTimestamp,
                     "true".equals(isReplication));
 
+            // 返回结果
             if (isSuccess) {
                 logger.info("Status updated: " + app.getName() + " - " + id
                         + " - " + newStatus);
@@ -203,15 +207,18 @@ public class InstanceResource {
             @QueryParam("value") String newStatusValue,
             @QueryParam("lastDirtyTimestamp") String lastDirtyTimestamp) {
         try {
+            // 应用实例不存在
             if (registry.getInstanceByAppAndId(app.getName(), id) == null) {
                 logger.warn("Instance not found: {}/{}", app.getName(), id);
                 return Response.status(Status.NOT_FOUND).build();
             }
 
+            // 覆盖状态删除
             InstanceStatus newStatus = newStatusValue == null ? InstanceStatus.UNKNOWN : InstanceStatus.valueOf(newStatusValue);
             boolean isSuccess = registry.deleteStatusOverride(app.getName(), id,
                     newStatus, lastDirtyTimestamp, "true".equals(isReplication));
 
+            // 返回结果
             if (isSuccess) {
                 logger.info("Status override removed: " + app.getName() + " - " + id);
                 return Response.ok().build();

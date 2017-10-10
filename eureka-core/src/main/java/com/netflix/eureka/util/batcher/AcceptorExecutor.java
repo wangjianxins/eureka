@@ -1,19 +1,5 @@
 package com.netflix.eureka.util.batcher;
 
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.netflix.eureka.util.batcher.TaskProcessor.ProcessingResult;
 import com.netflix.servo.annotations.DataSourceType;
 import com.netflix.servo.annotations.Monitor;
@@ -24,6 +10,10 @@ import com.netflix.servo.monitor.Timer;
 import com.netflix.servo.stats.StatsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.netflix.eureka.Names.METRIC_REPLICATION_PREFIX;
 
@@ -251,7 +241,7 @@ class AcceptorExecutor<ID, T> {
                     processingOrder.addFirst(id);
                 }
             }
-            if (isFull()) {
+            if (isFull()) { // TODO 芋艿，如果移除会怎么样？
                 queueOverflows += reprocessQueue.size();
                 reprocessQueue.clear();
             }
@@ -321,6 +311,7 @@ class AcceptorExecutor<ID, T> {
                 return true;
             }
 
+            // TODO 时间条件
             TaskHolder<ID, T> nextHolder = pendingTasks.get(processingOrder.peek());
             long delay = System.currentTimeMillis() - nextHolder.getSubmitTimestamp();
             return delay >= maxBatchingDelay;

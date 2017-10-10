@@ -105,6 +105,9 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
     protected final EurekaClient eurekaClient;
     protected volatile PeerEurekaNodes peerEurekaNodes;
 
+    /**
+     * 应用实例状态覆盖规则
+     */
     private final InstanceStatusOverrideRule instanceStatusOverrideRule;
 
     private Timer timer = new Timer(
@@ -428,6 +431,7 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
                                 final InstanceStatus newStatus, String lastDirtyTimestamp,
                                 final boolean isReplication) {
         if (super.statusUpdate(appName, id, newStatus, lastDirtyTimestamp, isReplication)) {
+            // Eureka-Server 集群同步
             replicateToPeers(Action.StatusUpdate, appName, id, null, newStatus, isReplication);
             return true;
         }
@@ -440,6 +444,7 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
                                         String lastDirtyTimestamp,
                                         boolean isReplication) {
         if (super.deleteStatusOverride(appName, id, newStatus, lastDirtyTimestamp, isReplication)) {
+            // Eureka-Server 集群同步
             replicateToPeers(Action.DeleteStatusOverride, appName, id, null, null, isReplication);
             return true;
         }
@@ -641,7 +646,7 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
                                                  String id, InstanceInfo info, InstanceStatus newStatus,
                                                  PeerEurekaNode node) {
         try {
-            InstanceInfo infoFromRegistry = null;
+            InstanceInfo infoFromRegistry;
             CurrentRequestVersion.set(Version.V2);
             switch (action) {
                 case Cancel:

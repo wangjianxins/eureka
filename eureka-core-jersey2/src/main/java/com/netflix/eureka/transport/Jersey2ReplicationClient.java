@@ -1,23 +1,5 @@
 package com.netflix.eureka.transport;
 
-import static com.netflix.discovery.shared.transport.EurekaHttpResponse.anEurekaHttpResponse;
-
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
-
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation.Builder;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.InstanceStatus;
 import com.netflix.discovery.shared.transport.EurekaHttpResponse;
@@ -33,6 +15,22 @@ import com.netflix.eureka.cluster.protocol.ReplicationList;
 import com.netflix.eureka.cluster.protocol.ReplicationListResponse;
 import com.netflix.eureka.resources.ASGResource.ASGStatus;
 import com.netflix.eureka.resources.ServerCodecs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation.Builder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.UnknownHostException;
+
+import static com.netflix.discovery.shared.transport.EurekaHttpResponse.anEurekaHttpResponse;
 
 /**
  * @author Tomasz Bak
@@ -74,7 +72,7 @@ public class Jersey2ReplicationClient extends AbstractJersey2EurekaHttpClient im
             response = requestBuilder.accept(MediaType.APPLICATION_JSON_TYPE).put(Entity.entity("{}", MediaType.APPLICATION_JSON_TYPE)); // Jersey2 refuses to handle PUT with no body
             InstanceInfo infoFromPeer = null;
             if (response.getStatus() == Status.CONFLICT.getStatusCode() && response.hasEntity()) {
-                infoFromPeer = response.readEntity(InstanceInfo.class);
+                infoFromPeer = response.readEntity(InstanceInfo.class); // todo TODO[0022]：状态更新
             }
             return anEurekaHttpResponse(response.getStatus(), infoFromPeer).type(MediaType.APPLICATION_JSON_TYPE).build();
         } finally {
