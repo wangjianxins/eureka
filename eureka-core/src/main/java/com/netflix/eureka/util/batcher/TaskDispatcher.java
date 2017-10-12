@@ -13,6 +13,8 @@ package com.netflix.eureka.util.batcher;
  * To create non batched executor call {@link TaskDispatchers#createNonBatchingTaskDispatcher(String, int, int, long, long, TaskProcessor)}
  * method. Batched executor is created by {@link TaskDispatchers#createBatchingTaskDispatcher(String, int, int, int, long, long, TaskProcessor)}.
  *
+ * 任务分发器接口
+ *
  * @author Tomasz Bak
  */
 public interface TaskDispatcher<ID, T> {
