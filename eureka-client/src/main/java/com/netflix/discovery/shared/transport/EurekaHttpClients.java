@@ -16,8 +16,6 @@
 
 package com.netflix.discovery.shared.transport;
 
-import java.util.List;
-
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.EurekaClientNames;
@@ -25,17 +23,15 @@ import com.netflix.discovery.shared.resolver.AsyncResolver;
 import com.netflix.discovery.shared.resolver.ClosableResolver;
 import com.netflix.discovery.shared.resolver.ClusterResolver;
 import com.netflix.discovery.shared.resolver.EurekaEndpoint;
-import com.netflix.discovery.shared.resolver.aws.ApplicationsResolver;
-import com.netflix.discovery.shared.resolver.aws.AwsEndpoint;
-import com.netflix.discovery.shared.resolver.aws.ConfigClusterResolver;
-import com.netflix.discovery.shared.resolver.aws.EurekaHttpResolver;
-import com.netflix.discovery.shared.resolver.aws.ZoneAffinityClusterResolver;
-import com.netflix.discovery.shared.transport.decorator.SessionedEurekaHttpClient;
+import com.netflix.discovery.shared.resolver.aws.*;
 import com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient;
 import com.netflix.discovery.shared.transport.decorator.RetryableEurekaHttpClient;
 import com.netflix.discovery.shared.transport.decorator.ServerStatusEvaluators;
+import com.netflix.discovery.shared.transport.decorator.SessionedEurekaHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * @author Tomasz Bak
@@ -193,6 +189,7 @@ public final class EurekaHttpClients {
 
             @Override
             public List<AwsEndpoint> getClusterEndpoints() {
+                // TODO 芋艿：猜测 1.x 对 2.x 的兼容，Eureka 2.x 注册到 Eureka 1.x ，使用 vipAddress 获取，涉及ApplicationsResolver、EurekaHttpResolver ；优先使用前者解析，若解析不到结果，使用后者，再解析不到，使用 ConfigClusterResolver 。
                 List<AwsEndpoint> result = localResolver.getClusterEndpoints();
                 if (result.isEmpty()) {
                     result = remoteResolver.getClusterEndpoints();

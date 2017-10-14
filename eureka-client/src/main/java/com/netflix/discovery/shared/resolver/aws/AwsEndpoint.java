@@ -7,12 +7,20 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * 基于 region 、zone 的 Eureka 服务端点
+ *
  * @author David Liu
  */
 public class AwsEndpoint extends DefaultEndpoint {
 
-    protected final String zone;
+    /**
+     * 区域
+     */
     protected final String region;
+    /**
+     * 可用区
+     */
+    protected final String zone;
 
     public AwsEndpoint(String serviceURI, String region, String zone) {
         super(serviceURI);

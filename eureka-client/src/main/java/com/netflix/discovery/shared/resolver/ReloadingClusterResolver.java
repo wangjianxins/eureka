@@ -16,14 +16,14 @@
 
 package com.netflix.discovery.shared.resolver;
 
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.netflix.servo.annotations.DataSourceType;
 import com.netflix.servo.annotations.Monitor;
 import com.netflix.servo.monitor.Monitors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.netflix.discovery.EurekaClientNames.METRIC_RESOLVER_PREFIX;
 
@@ -37,6 +37,7 @@ import static com.netflix.discovery.EurekaClientNames.METRIC_RESOLVER_PREFIX;
  *
  * @author Tomasz Bak
  */
+@Deprecated // add by 芋艿，因为这个类的使用类 LegacyClusterResolver 被废弃
 public class ReloadingClusterResolver<T extends EurekaEndpoint> implements ClusterResolver<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(ReloadingClusterResolver.class);

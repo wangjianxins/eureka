@@ -186,6 +186,11 @@ public class ExampleEurekaClient {
 
         System.setProperty("eureka.client.refresh.interval", "1");
 
+        if (false) { // 芋艿，测试 useDNS
+            System.setProperty("eureka.shouldUseDns", "true");
+            System.setProperty("eureka.eurekaServer.domainName", "eureka.iocoder.cn");
+        }
+
 
 //    eureka    ConfigurationManager.getConfigInstance().setProperty("eureka.environment", "production");
 //        System.setProperty("eureka", "production");

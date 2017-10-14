@@ -66,7 +66,9 @@ public final class EurekaServerHttpClients {
     }
 
     public static TransportClientFactory createFactory(final TransportClientFactory delegateFactory) {
+
         final DnsServiceImpl dnsService = new DnsServiceImpl();
+
         return new TransportClientFactory() {
             @Override
             public EurekaHttpClient newClient(EurekaEndpoint endpoint) {
@@ -78,6 +80,7 @@ public final class EurekaServerHttpClients {
                 delegateFactory.shutdown();
             }
         };
+
     }
 
 }

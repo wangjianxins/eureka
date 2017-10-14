@@ -16,18 +16,21 @@
 
 package com.netflix.discovery.shared.resolver;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Statically configured Eureka server pool.
  *
+ * // TODO RemoteRegionRegistry 使用
+ *
  * @author Tomasz Bak
  */
+@Deprecated // add by 芋艿，这个类和 Eureka 2.x 兼容相关，先暂时标记为废弃。
 public class StaticClusterResolver<T extends EurekaEndpoint> implements ClusterResolver<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(StaticClusterResolver.class);

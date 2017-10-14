@@ -1,5 +1,8 @@
 package com.netflix.discovery.endpoint;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.annotation.Nullable;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -7,15 +10,7 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.*;
 
 /**
  * @author Tomasz Bak
@@ -129,17 +124,21 @@ public final class DnsResolver {
      * Looks up the DNS name provided in the JNDI context.
      */
     public static Set<String> getCNamesFromTxtRecord(String discoveryDnsName) throws NamingException {
+        // 从 DNS 服务器解析 TXT 记录
         Attributes attrs = dirContext.getAttributes(discoveryDnsName, new String[]{TXT_RECORD_TYPE});
         Attribute attr = attrs.get(TXT_RECORD_TYPE);
         String txtRecord = null;
         if (attr != null) {
             txtRecord = attr.get().toString();
+            // TODO 芋艿：阿里云 dns 解析，如果有空格，默认就加了 "
+            txtRecord = txtRecord.replaceAll("\"", "");
         }
-
+        // 记录为空
         Set<String> cnamesSet = new TreeSet<String>();
         if (txtRecord == null || txtRecord.trim().isEmpty()) {
             return cnamesSet;
         }
+        // 空格分隔
         String[] cnames = txtRecord.split(" ");
         Collections.addAll(cnamesSet, cnames);
         return cnamesSet;

@@ -16,12 +16,12 @@
 
 package com.netflix.discovery.shared.resolver;
 
-import java.util.Collections;
-import java.util.List;
-
 import com.netflix.discovery.shared.dns.DnsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Resolves cluster addresses from DNS. If the provided name contains only CNAME entry, the cluster server pool
@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Tomasz Bak
  */
+@Deprecated // add by 芋艿，实际未使用
 public class DnsClusterResolver implements ClusterResolver<EurekaEndpoint> {
 
     private static final Logger logger = LoggerFactory.getLogger(DnsClusterResolver.class);

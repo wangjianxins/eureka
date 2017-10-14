@@ -16,13 +16,13 @@
 
 package com.netflix.discovery.shared.resolver.aws;
 
-import java.util.Collections;
-import java.util.List;
-
 import com.netflix.discovery.shared.resolver.ClusterResolver;
 import com.netflix.discovery.shared.resolver.ResolverUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * It is a cluster resolver that reorders the server list, such that the first server on the list
@@ -59,7 +59,7 @@ public class ZoneAffinityClusterResolver implements ClusterResolver<AwsEndpoint>
         List<AwsEndpoint> myZoneEndpoints = parts[0];
         List<AwsEndpoint> remainingEndpoints = parts[1];
         List<AwsEndpoint> randomizedList = randomizeAndMerge(myZoneEndpoints, remainingEndpoints);
-        if (!zoneAffinity) {
+        if (!zoneAffinity) { // TODO 芋艿：疑问
             Collections.reverse(randomizedList);
         }
 

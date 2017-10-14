@@ -1,7 +1,5 @@
 package com.netflix.discovery.shared.transport.jersey;
 
-import java.util.Collection;
-
 import com.netflix.appinfo.EurekaClientIdentity;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClientConfig;
@@ -12,7 +10,10 @@ import com.netflix.discovery.shared.transport.decorator.MetricsCollectingEurekaH
 import com.sun.jersey.api.client.filter.ClientFilter;
 import com.sun.jersey.client.apache4.ApacheHttpClient4;
 
+import java.util.Collection;
+
 public class Jersey1TransportClientFactories implements TransportClientFactories<ClientFilter> {
+
     @Deprecated
     public TransportClientFactory newTransportClientFactory(final Collection<ClientFilter> additionalFilters,
                                                                    final EurekaJerseyClient providedJerseyClient) {
@@ -66,4 +67,5 @@ public class Jersey1TransportClientFactories implements TransportClientFactories
             }
         };
     }
+
 }

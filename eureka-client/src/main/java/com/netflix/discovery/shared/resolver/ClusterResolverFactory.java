@@ -19,6 +19,7 @@ package com.netflix.discovery.shared.resolver;
 /**
  * @author Tomasz Bak
  */
+@Deprecated // add by 芋艿，因为这个类的使用类 ReloadingClusterResolver 被废弃
 public interface ClusterResolverFactory<T extends EurekaEndpoint> {
 
     ClusterResolver<T> createClusterResolver();

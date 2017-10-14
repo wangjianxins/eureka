@@ -16,17 +16,17 @@
 
 package com.netflix.discovery.shared.resolver.aws;
 
-import javax.naming.NamingException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import com.netflix.discovery.endpoint.DnsResolver;
 import com.netflix.discovery.shared.resolver.ClusterResolver;
 import com.netflix.discovery.shared.resolver.ClusterResolverException;
 import com.netflix.discovery.shared.resolver.ResolverUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.naming.NamingException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A cluster resolver implementation that assumes that Eureka cluster configuration is provided in two level,
@@ -79,11 +79,29 @@ public class DnsTxtRecordClusterResolver implements ClusterResolver<AwsEndpoint>
 
     private static final Logger logger = LoggerFactory.getLogger(DnsTxtRecordClusterResolver.class);
 
+    /**
+     * 地区
+     */
     private final String region;
+    /**
+     * 集群根地址，例如 eureka.iocoder.cn
+     */
     private final String rootClusterDNS;
+    /**
+     * 是否解析可用区( zone )
+     */
     private final boolean extractZoneFromDNS;
+    /**
+     * 端口
+     */
     private final int port;
+    /**
+     * 是否安全
+     */
     private final boolean isSecure;
+    /**
+     * 相对地址
+     */
     private final String relativeUri;
 
     /**
@@ -113,19 +131,20 @@ public class DnsTxtRecordClusterResolver implements ClusterResolver<AwsEndpoint>
         if (logger.isDebugEnabled()) {
             logger.debug("Resolved {} to {}", rootClusterDNS, eurekaEndpoints);
         }
-
         return eurekaEndpoints;
     }
 
     private static List<AwsEndpoint> resolve(String region, String rootClusterDNS, boolean extractZone, int port, boolean isSecure, String relativeUri) {
         try {
+            // 解析 第一层 DNS 记录
             Set<String> zoneDomainNames = resolve(rootClusterDNS);
             if (zoneDomainNames.isEmpty()) {
                 throw new ClusterResolverException("Cannot resolve Eureka cluster addresses; there are no data in TXT record for DN " + rootClusterDNS);
             }
+            // 记录 第二层 DNS 记录
             List<AwsEndpoint> endpoints = new ArrayList<>();
             for (String zoneDomain : zoneDomainNames) {
-                String zone = extractZone ? ResolverUtils.extractZoneFromHostName(zoneDomain) : null;
+                String zone = extractZone ? ResolverUtils.extractZoneFromHostName(zoneDomain) : null; //
                 Set<String> zoneAddresses = resolve(zoneDomain);
                 for (String address : zoneAddresses) {
                     endpoints.add(new AwsEndpoint(address, port, isSecure, relativeUri, region, zone));
@@ -141,6 +160,7 @@ public class DnsTxtRecordClusterResolver implements ClusterResolver<AwsEndpoint>
         Set<String> result;
         try {
             result = DnsResolver.getCNamesFromTxtRecord(rootClusterDNS);
+            // TODO 芋艿：这块是bug，不需要这一段
             if (!rootClusterDNS.startsWith("txt.")) {
                 result = DnsResolver.getCNamesFromTxtRecord("txt." + rootClusterDNS);
             }

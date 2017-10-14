@@ -24,6 +24,7 @@ import java.util.List;
 /**
  * @author David Liu
  */
+@Deprecated // add by 芋艿，这个类和 Eureka 2.x 兼容相关，先暂时标记为废弃。
 public class EurekaHttpResolver implements ClusterResolver<AwsEndpoint> {
     private static final Logger logger = LoggerFactory.getLogger(EurekaHttpResolver.class);
 
