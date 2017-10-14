@@ -174,7 +174,7 @@ public class ExampleEurekaClient {
         System.setProperty("eureka.vipAddress", "eureka.mydomain.net");
 //        System.setProperty("eureka.vipAddress", "${eureka}.eureka.mydomain.net");
         System.setProperty("eureka.port", "8080");
-        System.setProperty("eureka.preferSameZone", "false");
+        System.setProperty("eureka.preferSameZone", "true");
         System.setProperty("eureka.shouldUseDns", "false");
         System.setProperty("eureka.shouldFetchRegistry", "true");
         System.setProperty("eureka.serviceUrl.defaultZone", myServiceUrl);
@@ -189,6 +189,17 @@ public class ExampleEurekaClient {
         if (false) { // 芋艿，测试 useDNS
             System.setProperty("eureka.shouldUseDns", "true");
             System.setProperty("eureka.eurekaServer.domainName", "eureka.iocoder.cn");
+        }
+
+        if (true) {
+            System.setProperty("eureka.preferSameZone", "false");
+
+            System.setProperty("eureka.default.availabilityZones", "hangzhou,guangzhou,shanghai");
+
+            System.setProperty("eureka.serviceUrl.hangzhou", "1,2,3");
+            System.setProperty("eureka.serviceUrl.guangzhou", "4,5,6");
+            System.setProperty("eureka.serviceUrl.shanghai", "7,8,9");
+//            System.setProperty("eureka.serviceUrl.default.defaultZone", "4,5,6");
         }
 
 

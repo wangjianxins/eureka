@@ -514,6 +514,7 @@ public class DiscoveryClient implements EurekaClient {
                 ? transportClientFactories.newTransportClientFactory(clientConfig, additionalFilters, applicationInfoManager.getInfo())
                 : transportClientFactories.newTransportClientFactory(additionalFilters, providedJerseyClient);
 
+        // 初始化 应用解析器的应用实例数据源 TODO[0028]写入集群和读取集群
         ApplicationsResolver.ApplicationsSource applicationsSource = new ApplicationsResolver.ApplicationsSource() {
             @Override
             public Applications getApplications(int stalenessThreshold, TimeUnit timeUnit) {
@@ -529,6 +530,7 @@ public class DiscoveryClient implements EurekaClient {
             }
         };
 
+        // 创建 EndPoint 解析器
         eurekaTransport.bootstrapResolver = EurekaHttpClients.newBootstrapResolver(
                 clientConfig,
                 transportConfig,

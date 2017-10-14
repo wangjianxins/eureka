@@ -34,31 +34,34 @@ public class ConfigClusterResolver implements ClusterResolver<AwsEndpoint> {
 
     @Override
     public List<AwsEndpoint> getClusterEndpoints() {
+        // 使用 DNS 获取 EndPoint
         if (clientConfig.shouldUseDnsForFetchingServiceUrls()) {
             if (logger.isInfoEnabled()) {
                 logger.info("Resolving eureka endpoints via DNS: {}", getDNSName());
             }
             return getClusterEndpointsFromDns();
         } else {
+        // 直接配置实际访问地址
             logger.info("Resolving eureka endpoints via configuration");
             return getClusterEndpointsFromConfig();
         }
     }
 
     private List<AwsEndpoint> getClusterEndpointsFromDns() {
-        String discoveryDnsName = getDNSName();
-        int port = Integer.parseInt(clientConfig.getEurekaServerPort());
+        String discoveryDnsName = getDNSName(); // 获取 集群根地址
+        int port = Integer.parseInt(clientConfig.getEurekaServerPort()); // 端口
 
         // cheap enough so just re-use
         DnsTxtRecordClusterResolver dnsResolver = new DnsTxtRecordClusterResolver(
                 getRegion(),
                 discoveryDnsName,
-                true,
+                true, // 解析 zone
                 port,
                 false,
                 clientConfig.getEurekaServerURLContext()
         );
 
+        // 调用 DnsTxtRecordClusterResolver 解析 EndPoint
         List<AwsEndpoint> endpoints = dnsResolver.getClusterEndpoints();
 
         if (endpoints.isEmpty()) {
@@ -69,12 +72,13 @@ public class ConfigClusterResolver implements ClusterResolver<AwsEndpoint> {
     }
 
     private List<AwsEndpoint> getClusterEndpointsFromConfig() {
+        // 获得 可用区
         String[] availZones = clientConfig.getAvailabilityZones(clientConfig.getRegion());
+        // 获取 应用实例自己 的 可用区
         String myZone = InstanceInfo.getZone(availZones, myInstanceInfo);
-
-        Map<String, List<String>> serviceUrls = EndpointUtils
-                .getServiceUrlsMapFromConfig(clientConfig, myZone, clientConfig.shouldPreferSameZoneEureka());
-
+        // 获得 可用区与 serviceUrls 的映射
+        Map<String, List<String>> serviceUrls = EndpointUtils.getServiceUrlsMapFromConfig(clientConfig, myZone, clientConfig.shouldPreferSameZoneEureka());
+        // 拼装 EndPoint 集群结果
         List<AwsEndpoint> endpoints = new ArrayList<>();
         for (String zone : serviceUrls.keySet()) {
             for (String url : serviceUrls.get(zone)) {
@@ -86,10 +90,11 @@ public class ConfigClusterResolver implements ClusterResolver<AwsEndpoint> {
             }
         }
 
+        // 打印日志，EndPoint 集群
         if (logger.isDebugEnabled()) {
             logger.debug("Config resolved to {}", endpoints);
         }
-
+        // 打印日志，解析结果为空
         if (endpoints.isEmpty()) {
             logger.error("Cannot resolve to any endpoints from provided configuration: {}", serviceUrls);
         }

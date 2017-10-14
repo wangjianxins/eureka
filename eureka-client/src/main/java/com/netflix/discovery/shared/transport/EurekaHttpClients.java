@@ -128,22 +128,29 @@ public final class EurekaHttpClients {
      */
     static ClosableResolver<AwsEndpoint> defaultBootstrapResolver(final EurekaClientConfig clientConfig,
                                                                   final InstanceInfo myInstanceInfo) {
+        // 获得 可用区集合
         String[] availZones = clientConfig.getAvailabilityZones(clientConfig.getRegion());
+        // 获得 应用实例的 可用区
         String myZone = InstanceInfo.getZone(availZones, myInstanceInfo);
 
+        // 创建 ZoneAffinityClusterResolver
         ClusterResolver<AwsEndpoint> delegateResolver = new ZoneAffinityClusterResolver(
                 new ConfigClusterResolver(clientConfig, myInstanceInfo),
                 myZone,
                 true
         );
 
+        // 第一次 EndPoint 解析
         List<AwsEndpoint> initialValue = delegateResolver.getClusterEndpoints();
+
+        // 解析不到 Eureka-Server EndPoint ，快速失败
         if (initialValue.isEmpty()) {
             String msg = "Initial resolution of Eureka server endpoints failed. Check ConfigClusterResolver logs for more info";
             logger.error(msg);
             failFastOnInitCheck(clientConfig, msg);
         }
 
+        // 创建 AsyncResolver
         return new AsyncResolver<>(
                 EurekaClientNames.BOOTSTRAP,
                 delegateResolver,
