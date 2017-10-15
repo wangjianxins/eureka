@@ -220,7 +220,7 @@ public class EurekaJerseyClientImpl implements EurekaJerseyClient {
                 DiscoveryJerseyProvider discoveryJerseyProvider = new DiscoveryJerseyProvider(encoderWrapper, decoderWrapper);
                 getSingletons().add(discoveryJerseyProvider);
 
-                //
+                // 连接数量参数
                 // Common properties to all clients
                 cm.setDefaultMaxPerRoute(maxConnectionsPerHost);
                 cm.setMaxTotal(maxTotalConnections);

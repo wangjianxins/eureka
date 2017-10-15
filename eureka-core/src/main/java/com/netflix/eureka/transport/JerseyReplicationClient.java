@@ -1,12 +1,5 @@
 package com.netflix.eureka.transport;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
-
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.InstanceStatus;
 import com.netflix.discovery.EurekaIdentityHeaderFilter;
@@ -29,6 +22,13 @@ import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.client.apache4.ApacheHttpClient4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.UnknownHostException;
 
 import static com.netflix.discovery.shared.transport.EurekaHttpResponse.anEurekaHttpResponse;
 
