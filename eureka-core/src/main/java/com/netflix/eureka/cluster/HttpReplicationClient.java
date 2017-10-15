@@ -11,7 +11,7 @@ import com.netflix.eureka.resources.ASGResource.ASGStatus;
  */
 public interface HttpReplicationClient extends EurekaHttpClient {
 
-    EurekaHttpResponse<Void> statusUpdate(String asgName, ASGStatus newStatus);
+    EurekaHttpResponse<Void> statusUpdate(String asgName, ASGStatus newStatus); // AWS 相关，跳过
 
     EurekaHttpResponse<ReplicationListResponse> submitBatchUpdates(ReplicationList replicationList);
 

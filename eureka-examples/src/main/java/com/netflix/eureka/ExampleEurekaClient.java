@@ -191,7 +191,7 @@ public class ExampleEurekaClient {
             System.setProperty("eureka.eurekaServer.domainName", "eureka.iocoder.cn");
         }
 
-        if (true) {
+        if (false) {
             System.setProperty("eureka.preferSameZone", "false");
 
             System.setProperty("eureka.default.availabilityZones", "hangzhou,guangzhou,shanghai");
@@ -200,6 +200,13 @@ public class ExampleEurekaClient {
             System.setProperty("eureka.serviceUrl.guangzhou", "4,5,6");
             System.setProperty("eureka.serviceUrl.shanghai", "7,8,9");
 //            System.setProperty("eureka.serviceUrl.default.defaultZone", "4,5,6");
+        }
+
+        if (true) {
+            System.setProperty("eureka.eurekaServer.proxyHost", "http://127.0.0.1");
+            System.setProperty("eureka.eurekaServer.proxyPort", "6666");
+            System.setProperty("eureka.eurekaServer.username", "qqq");
+            System.setProperty("eureka.eurekaServer.password", "ttt");
         }
 
 

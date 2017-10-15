@@ -116,12 +116,13 @@ public class JerseyEurekaHttpClientFactory implements TransportClientFactory {
                                                        InstanceInfo myInstanceInfo,
                                                        AbstractEurekaIdentity clientIdentity) {
         JerseyEurekaHttpClientFactoryBuilder clientBuilder = newBuilder()
-                .withAdditionalFilters(additionalFilters)
-                .withMyInstanceInfo(myInstanceInfo)
-                .withUserAgent("Java-EurekaClient")
+                .withAdditionalFilters(additionalFilters) // 客户端附加过滤器
+                .withMyInstanceInfo(myInstanceInfo) // 应用实例
+                .withUserAgent("Java-EurekaClient") // UA
                 .withClientConfig(clientConfig)
                 .withClientIdentity(clientIdentity);
 
+        // 设置 Client Name
         if ("true".equals(System.getProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory"))) {
             clientBuilder.withClientName("DiscoveryClient-HTTPClient-System").withSystemSSLConfiguration();
         } else if (clientConfig.getProxyHost() != null && clientConfig.getProxyPort() != null) {
@@ -129,7 +130,7 @@ public class JerseyEurekaHttpClientFactory implements TransportClientFactory {
                     .withProxy(
                             clientConfig.getProxyHost(), Integer.parseInt(clientConfig.getProxyPort()),
                             clientConfig.getProxyUserName(), clientConfig.getProxyPassword()
-                    );
+                    ); // http proxy
         } else {
             clientBuilder.withClientName("DiscoveryClient-HTTPClient");
         }
@@ -188,7 +189,7 @@ public class JerseyEurekaHttpClientFactory implements TransportClientFactory {
          *
          * 使用 {@link EurekaJerseyClientBuilder} 创建 EurekaJerseyClient
          * 使用高版本的 Apache HttpClient 4.3.4 的 SSL 配置
-         * 不使用 Http Proxy
+         * 不使用 Http Proxy TODO 【芋艿】可能是bug，因为实际是会传递的
          *
          * @param additionalHeaders 附加请求头
          * @param systemSSL systemSSL
@@ -220,6 +221,7 @@ public class JerseyEurekaHttpClientFactory implements TransportClientFactory {
             // 添加过滤器
             addFilters(discoveryApacheClient);
 
+            // TODO 【芋艿】connectionIdleTimeout 没问题么？猜测 bug，这样 clean 的过期时间是 0 秒
             return new JerseyEurekaHttpClientFactory(jerseyClient, additionalHeaders);
         }
 

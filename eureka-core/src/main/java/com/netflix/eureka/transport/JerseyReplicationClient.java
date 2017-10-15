@@ -134,9 +134,9 @@ public class JerseyReplicationClient extends AbstractJerseyEurekaHttpClient impl
 
     public static JerseyReplicationClient createReplicationClient(EurekaServerConfig config, ServerCodecs serverCodecs, String serviceUrl) {
         String name = JerseyReplicationClient.class.getSimpleName() + ": " + serviceUrl + "apps/: ";
-
         EurekaJerseyClient jerseyClient;
         try {
+            // 获得 hostname
             String hostname;
             try {
                 hostname = new URL(serviceUrl).getHost();
@@ -144,6 +144,7 @@ public class JerseyReplicationClient extends AbstractJerseyEurekaHttpClient impl
                 hostname = serviceUrl;
             }
 
+            // 创建 EurekaJerseyClientBuilder
             String jerseyClientName = "Discovery-PeerNodeClient-" + hostname;
             EurekaJerseyClientBuilder clientBuilder = new EurekaJerseyClientBuilder()
                     .withClientName(jerseyClientName)
@@ -156,15 +157,19 @@ public class JerseyReplicationClient extends AbstractJerseyEurekaHttpClient impl
                     .withMaxTotalConnections(config.getPeerNodeTotalConnections())
                     .withConnectionIdleTimeout(config.getPeerNodeConnectionIdleTimeoutSeconds());
 
+            // SSL
             if (serviceUrl.startsWith("https://") &&
                     "true".equals(System.getProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory"))) {
                 clientBuilder.withSystemSSLConfiguration();
             }
+
+            // 创建 EurekaJerseyClient
             jerseyClient = clientBuilder.build();
         } catch (Throwable e) {
             throw new RuntimeException("Cannot Create new Replica Node :" + name, e);
         }
 
+        // 获得 IP
         String ip = null;
         try {
             ip = InetAddress.getLocalHost().getHostAddress();
@@ -172,12 +177,15 @@ public class JerseyReplicationClient extends AbstractJerseyEurekaHttpClient impl
             logger.warn("Cannot find localhost ip", e);
         }
 
+        // GZIP 过滤器
         ApacheHttpClient4 jerseyApacheClient = jerseyClient.getClient();
         jerseyApacheClient.addFilter(new DynamicGZIPContentEncodingFilter(config));
 
+        // Auth 过滤器
         EurekaServerIdentity identity = new EurekaServerIdentity(ip);
         jerseyApacheClient.addFilter(new EurekaIdentityHeaderFilter(identity));
 
+        // 创建 JerseyReplicationClient
         return new JerseyReplicationClient(jerseyClient, serviceUrl);
     }
 
