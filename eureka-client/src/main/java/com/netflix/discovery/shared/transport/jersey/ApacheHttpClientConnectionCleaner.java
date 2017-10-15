@@ -16,21 +16,16 @@
 
 package com.netflix.discovery.shared.transport.jersey;
 
+import com.netflix.servo.monitor.*;
+import com.sun.jersey.client.apache4.ApacheHttpClient4;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.netflix.servo.monitor.BasicCounter;
-import com.netflix.servo.monitor.BasicTimer;
-import com.netflix.servo.monitor.Counter;
-import com.netflix.servo.monitor.MonitorConfig;
-import com.netflix.servo.monitor.Monitors;
-import com.netflix.servo.monitor.Stopwatch;
-import com.sun.jersey.client.apache4.ApacheHttpClient4;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A periodic process running in background cleaning Apache http client connection pool out of idle connections.
@@ -89,6 +84,11 @@ public class ApacheHttpClientConnectionCleaner {
         eurekaConnCleaner.shutdown();
     }
 
+    /**
+     * 关闭空闲连接
+     *
+     * @param delayMs 延迟
+     */
     public void cleanIdle(long delayMs) {
         Stopwatch start = executionTimeStats.start();
         try {
