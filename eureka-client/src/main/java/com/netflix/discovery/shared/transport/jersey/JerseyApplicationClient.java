@@ -29,6 +29,9 @@ import java.util.Map;
  */
 public class JerseyApplicationClient extends AbstractJerseyEurekaHttpClient {
 
+    /**
+     * 自定义请求头
+     */
     private final Map<String, String> additionalHeaders;
 
     public JerseyApplicationClient(Client jerseyClient, String serviceUrl, Map<String, String> additionalHeaders) {

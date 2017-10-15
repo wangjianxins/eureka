@@ -27,13 +27,21 @@ import java.util.Map.Entry;
 import static com.netflix.discovery.shared.transport.EurekaHttpResponse.anEurekaHttpResponse;
 
 /**
+ * 实现 EurekaHttpClient 的抽象类，真正实现了具体的 Eureka-Server API 调用方法。
+ *
  * @author Tomasz Bak
  */
 public abstract class AbstractJerseyEurekaHttpClient implements EurekaHttpClient {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractJerseyEurekaHttpClient.class);
 
+    /**
+     * Jersey Client
+     */
     protected final Client jerseyClient;
+    /**
+     * 请求的 Eureka-Server 地址
+     */
     protected final String serviceUrl;
 
     protected AbstractJerseyEurekaHttpClient(Client jerseyClient, String serviceUrl) {
@@ -44,16 +52,20 @@ public abstract class AbstractJerseyEurekaHttpClient implements EurekaHttpClient
 
     @Override
     public EurekaHttpResponse<Void> register(InstanceInfo info) {
+        // 设置 请求地址
         String urlPath = "apps/" + info.getAppName();
         ClientResponse response = null;
         try {
             Builder resourceBuilder = jerseyClient.resource(serviceUrl).path(urlPath).getRequestBuilder();
+            // 设置 请求头
             addExtraHeaders(resourceBuilder);
+            // 请求 Eureka-Server
             response = resourceBuilder
-                    .header("Accept-Encoding", "gzip")
-                    .type(MediaType.APPLICATION_JSON_TYPE)
-                    .accept(MediaType.APPLICATION_JSON)
-                    .post(ClientResponse.class, info);
+                    .header("Accept-Encoding", "gzip") // GZIP
+                    .type(MediaType.APPLICATION_JSON_TYPE) // 请求参数格式 JSON
+                    .accept(MediaType.APPLICATION_JSON) // 响应结果格式 JSON
+                    .post(ClientResponse.class, info); // 请求参数
+            // 创建 EurekaHttpResponse
             return anEurekaHttpResponse(response.getStatus()).headers(headersOf(response)).build();
         } finally {
             if (logger.isDebugEnabled()) {
@@ -285,7 +297,7 @@ public abstract class AbstractJerseyEurekaHttpClient implements EurekaHttpClient
     protected abstract void addExtraHeaders(Builder webResource);
 
     private static Map<String, String> headersOf(ClientResponse response) {
-        MultivaluedMap<String, String> jerseyHeaders = response.getHeaders();
+        MultivaluedMap<String, String> jerseyHeaders = response.getHeaders(); // 响应 header
         if (jerseyHeaders == null || jerseyHeaders.isEmpty()) {
             return Collections.emptyMap();
         }

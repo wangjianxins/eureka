@@ -8,6 +8,8 @@ import com.netflix.discovery.shared.Applications;
 /**
  * Low level Eureka HTTP client API.
  *
+ * Eureka-Server HTTP 访问客户端，定义了具体的 Eureka-Server API 调用方法 。
+ *
  * @author Tomasz Bak
  */
 public interface EurekaHttpClient {

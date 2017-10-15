@@ -199,6 +199,7 @@ public class EurekaJerseyClientImpl implements EurekaJerseyClient {
         class MyDefaultApacheHttpClient4Config extends DefaultApacheHttpClient4Config {
 
             MyDefaultApacheHttpClient4Config() {
+                // 可监控的连接管理器
                 MonitoredConnectionManager cm;
 
                 // SSL
