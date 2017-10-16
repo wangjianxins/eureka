@@ -16,9 +16,6 @@
 
 package com.netflix.eureka.cluster;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.InstanceStatus;
 import com.netflix.discovery.shared.transport.EurekaHttpResponse;
@@ -31,6 +28,9 @@ import com.netflix.eureka.util.batcher.TaskDispatcher;
 import com.netflix.eureka.util.batcher.TaskDispatchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * The <code>PeerEurekaNode</code> represents a peer node to which information
@@ -73,14 +73,39 @@ public class PeerEurekaNode {
 
     public static final String HEADER_REPLICATION = "x-netflix-discovery-replication";
 
+    /**
+     * 服务地址
+     */
     private final String serviceUrl;
+    /**
+     * Eureka-Server 配置
+     */
     private final EurekaServerConfig config;
+    /**
+     * 批任务同步最大延迟
+     */
     private final long maxProcessingDelayMs;
+    /**
+     * 应用实例注册表
+     */
     private final PeerAwareInstanceRegistry registry;
+    /**
+     * 目标 host
+     * {@link #serviceUrl} 中解析
+     */
     private final String targetHost;
+    /**
+     * 集群  EurekaHttpClient
+     */
     private final HttpReplicationClient replicationClient;
 
+    /**
+     * 批量任务分发器
+     */
     private final TaskDispatcher<String, ReplicationTask> batchingDispatcher;
+    /**
+     * 单任务分发器
+     */
     private final TaskDispatcher<String, ReplicationTask> nonBatchingDispatcher;
 
     public PeerEurekaNode(PeerAwareInstanceRegistry registry, String targetHost, String serviceUrl, HttpReplicationClient replicationClient, EurekaServerConfig config) {
@@ -100,7 +125,9 @@ public class PeerEurekaNode {
         this.maxProcessingDelayMs = config.getMaxTimeForReplication();
 
         String batcherName = getBatcherName();
+        // 初始化 集群复制任务处理器
         ReplicationTaskProcessor taskProcessor = new ReplicationTaskProcessor(targetHost, replicationClient);
+        // 初始化 批量任务分发器
         this.batchingDispatcher = TaskDispatchers.createBatchingTaskDispatcher(
                 batcherName,
                 config.getMaxElementsInPeerReplicationPool(),
@@ -111,6 +138,8 @@ public class PeerEurekaNode {
                 retrySleepTimeMs,
                 taskProcessor
         );
+
+        // 初始化 单任务分发器
         this.nonBatchingDispatcher = TaskDispatchers.createNonBatchingTaskDispatcher(
                 targetHost,
                 config.getMaxElementsInStatusReplicationPool(),

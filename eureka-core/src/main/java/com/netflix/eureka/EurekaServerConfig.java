@@ -164,7 +164,6 @@ public interface EurekaServerConfig {
      * </p>
      *
      * Eureka-Server 集群节点更新频率，单位：毫秒。
-     * TODO（后面源码在细读，可能要修正）
      *
      * @return timer in milliseconds indicating the interval.
      */

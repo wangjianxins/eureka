@@ -42,7 +42,8 @@ import static org.mockito.Mockito.when;
  *
  * @author Tomasz Bak
  */
-public class EurekaClientServerRestIntegrationTest {
+@SuppressWarnings("Duplicates")
+public class EurekaClientServerRestIntegrationTest02 {
 
     private static final String[] EUREKA1_WAR_DIRS = {"build/libs", "eureka-server/build/libs"};
 
@@ -237,7 +238,7 @@ public class EurekaClientServerRestIntegrationTest {
             System.setProperty("eureka.shouldUseReadOnlyResponseCache", "false");
             System.setProperty("eureka.waitTimeInMsWhenSyncEmpty", "1");
         } else if (type == 2) {
-            System.setProperty("eureka.port", "8080");
+            System.setProperty("eureka.port", "8081");
             myServiceUrl = "http://127.0.0.1:8080/v2/" + "," + "http://127.0.0.1:8081/v2/";
             System.setProperty("eureka.serviceUrl.defaultZone", myServiceUrl);
             System.setProperty("eureka.serviceUrl.default.defaultZone", myServiceUrl);
@@ -269,7 +270,7 @@ public class EurekaClientServerRestIntegrationTest {
     private static final String DEFAULT_APP_CONTEXT_PATH = "src/main/webapp";
 
     private static void startServer() throws Exception {
-        server = new Server(8080);
+        server = new Server(8081);
 
 //        ServletContextHandler handler = new ServletContextHandler();
 //        handler.addEventListener(new EurekaBootStrap());
