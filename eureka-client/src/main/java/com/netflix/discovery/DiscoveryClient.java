@@ -510,6 +510,7 @@ public class DiscoveryClient implements EurekaClient {
                 : argsTransportClientFactories;
 
         // If the transport factory was not supplied with args, assume they are using jersey 1 for passivity
+        // noinspection unchecked
         eurekaTransport.transportClientFactory = providedJerseyClient == null
                 ? transportClientFactories.newTransportClientFactory(clientConfig, additionalFilters, applicationInfoManager.getInfo())
                 : transportClientFactories.newTransportClientFactory(additionalFilters, providedJerseyClient);

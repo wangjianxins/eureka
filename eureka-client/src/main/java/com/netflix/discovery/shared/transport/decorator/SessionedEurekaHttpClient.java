@@ -16,9 +16,6 @@
 
 package com.netflix.discovery.shared.transport.decorator;
 
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.netflix.discovery.shared.transport.EurekaHttpClient;
 import com.netflix.discovery.shared.transport.EurekaHttpClientFactory;
 import com.netflix.discovery.shared.transport.EurekaHttpResponse;
@@ -28,6 +25,9 @@ import com.netflix.servo.annotations.Monitor;
 import com.netflix.servo.monitor.Monitors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.netflix.discovery.EurekaClientNames.METRIC_TRANSPORT_PREFIX;
 
@@ -63,6 +63,8 @@ public class SessionedEurekaHttpClient extends EurekaHttpClientDecorator {
     protected <R> EurekaHttpResponse<R> execute(RequestExecutor<R> requestExecutor) {
         long now = System.currentTimeMillis();
         long delay = now - lastReconnectTimeStamp;
+
+        // 超过 当前会话时间，关闭当前委托的 EurekaHttpClient 。
         if (delay >= currentSessionDurationMs) {
             logger.debug("Ending a session and starting anew");
             lastReconnectTimeStamp = now;
@@ -70,6 +72,7 @@ public class SessionedEurekaHttpClient extends EurekaHttpClientDecorator {
             TransportUtils.shutdown(eurekaHttpClientRef.getAndSet(null));
         }
 
+        // 获得委托的 EurekaHttpClient 。若不存在，则创建新的委托的 EurekaHttpClient 。
         EurekaHttpClient eurekaHttpClient = eurekaHttpClientRef.get();
         if (eurekaHttpClient == null) {
             eurekaHttpClient = TransportUtils.getOrSetAnotherClient(eurekaHttpClientRef, clientFactory.newClient());
@@ -98,4 +101,13 @@ public class SessionedEurekaHttpClient extends EurekaHttpClientDecorator {
     public long getCurrentSessionDuration() {
         return lastReconnectTimeStamp < 0 ? 0 : System.currentTimeMillis() - lastReconnectTimeStamp;
     }
+
+    public static void main(String[] args) {
+        SessionedEurekaHttpClient client = new SessionedEurekaHttpClient(null, null, -1);
+        long time = 20 * 60;
+        for (int i = 0; i < 100; i++) {
+            System.out.println(client.randomizeSessionDuration(time));
+        }
+    }
+
 }

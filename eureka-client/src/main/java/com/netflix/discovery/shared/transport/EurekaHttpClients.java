@@ -68,16 +68,16 @@ public final class EurekaHttpClients {
                                                           final ClusterResolver<EurekaEndpoint> clusterResolver,
                                                           final TransportClientFactory transportClientFactory) {
 
-        return new EurekaHttpClientFactory() {
+        return new EurekaHttpClientFactory() { // SessionedEurekaHttpClientFactory
             @Override
             public EurekaHttpClient newClient() {
                 return new SessionedEurekaHttpClient(
                         name,
-                        RetryableEurekaHttpClient.createFactory(
+                        RetryableEurekaHttpClient.createFactory( // RetryableEurekaHttpClient
                                 name,
                                 transportConfig,
                                 clusterResolver,
-                                RedirectingEurekaHttpClient.createFactory(transportClientFactory),
+                                RedirectingEurekaHttpClient.createFactory(transportClientFactory), // RedirectingEurekaHttpClient
                                 ServerStatusEvaluators.legacyEvaluator()),
                         transportConfig.getSessionedClientReconnectIntervalSeconds() * 1000
                 );

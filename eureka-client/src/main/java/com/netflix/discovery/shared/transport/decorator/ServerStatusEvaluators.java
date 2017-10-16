@@ -28,13 +28,13 @@ public final class ServerStatusEvaluators {
         public boolean accept(int statusCode, RequestType requestType) {
             if (statusCode >= 200 && statusCode < 300 || statusCode == 302) {
                 return true;
-            } else if (requestType == RequestType.Register && statusCode == 404) {
+            } else if (requestType == RequestType.Register && statusCode == 404) { // 注册，404 可接受
                 return true;
-            } else if (requestType == RequestType.SendHeartBeat && statusCode == 404) {
+            } else if (requestType == RequestType.SendHeartBeat && statusCode == 404) { // 心跳，404 可接受
                 return true;
-            } else if (requestType == RequestType.Cancel) {  // cancel is best effort
+            } else if (requestType == RequestType.Cancel) {  // cancel is best effort 下线，接受全部
                 return true;
-            } else if (requestType == RequestType.GetDelta && (statusCode == 403 || statusCode == 404)) {
+            } else if (requestType == RequestType.GetDelta && (statusCode == 403 || statusCode == 404)) { // 增量获取注册信息，403 404 可接受
                 return true;
             }
             return false;

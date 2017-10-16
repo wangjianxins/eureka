@@ -61,7 +61,9 @@ public class RetryableEurekaHttpClient extends EurekaHttpClientDecorator {
     private final int numberOfRetries;
 
     private final AtomicReference<EurekaHttpClient> delegate = new AtomicReference<>();
-
+    /**
+     * 隔离的故障 Eureka-Server 地址数组
+     */
     private final Set<EurekaEndpoint> quarantineSet = new ConcurrentSkipListSet<>();
 
     public RetryableEurekaHttpClient(String name,
@@ -94,23 +96,31 @@ public class RetryableEurekaHttpClient extends EurekaHttpClientDecorator {
         for (int retry = 0; retry < numberOfRetries; retry++) {
             EurekaHttpClient currentHttpClient = delegate.get();
             EurekaEndpoint currentEndpoint = null;
-            if (currentHttpClient == null) { // TODO 【芋艿】设置客户端
+
+            // 当前委托的 EurekaHttpClient 不存在
+            if (currentHttpClient == null) {
+                // 获得候选的 Eureka-Server 地址数组
                 if (candidateHosts == null) {
                     candidateHosts = getHostCandidates();
                     if (candidateHosts.isEmpty()) {
                         throw new TransportException("There is no known eureka server; cluster server list is empty");
                     }
                 }
+
+                // 超过候选的 Eureka-Server 地址数组上限
                 if (endpointIdx >= candidateHosts.size()) {
                     throw new TransportException("Cannot execute request on any known server");
                 }
 
+                // 创建候选的 EurekaHttpClient
                 currentEndpoint = candidateHosts.get(endpointIdx++);
                 currentHttpClient = clientFactory.newClient(currentEndpoint);
             }
 
             try {
+                // 执行请求
                 EurekaHttpResponse<R> response = requestExecutor.execute(currentHttpClient);
+                // 判断是否为可接受的相应，若是，返回。
                 if (serverStatusEvaluator.accept(response.getStatusCode(), requestExecutor.getRequestType())) {
                     delegate.set(currentHttpClient);
                     if (retry > 0) {
@@ -123,8 +133,11 @@ public class RetryableEurekaHttpClient extends EurekaHttpClientDecorator {
                 logger.warn("Request execution failed with message: {}", e.getMessage());  // just log message as the underlying client should log the stacktrace
             }
 
+            // 请求失败，若是 currentHttpClient ，清除 delegate
             // Connection error or 5xx from the server that must be retried on another server
             delegate.compareAndSet(currentHttpClient, null);
+
+            // 请求失败，将 currentEndpoint 添加到隔离集合
             if (currentEndpoint != null) {
                 quarantineSet.add(currentEndpoint);
             }
@@ -152,11 +165,15 @@ public class RetryableEurekaHttpClient extends EurekaHttpClientDecorator {
     }
 
     private List<EurekaEndpoint> getHostCandidates() {
+        // 获得候选的 Eureka-Server 地址数组
         List<EurekaEndpoint> candidateHosts = clusterResolver.getClusterEndpoints();
+
+        // 保留交集（移除 quarantineSet 不在 candidateHosts 的元素）
         quarantineSet.retainAll(candidateHosts);
 
+        // 在保证最小可用的候选的 Eureka-Server 地址数组，移除在隔离集合内的元素
         // If enough hosts are bad, we have no choice but start over again
-        int threshold = (int) (candidateHosts.size() * transportConfig.getRetryableClientQuarantineRefreshPercentage());
+        int threshold = (int) (candidateHosts.size() * transportConfig.getRetryableClientQuarantineRefreshPercentage()); // 0.66
         if (quarantineSet.isEmpty()) {
             // no-op
         } else if (quarantineSet.size() >= threshold) {
