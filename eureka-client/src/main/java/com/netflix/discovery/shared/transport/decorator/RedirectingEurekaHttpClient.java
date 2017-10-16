@@ -16,23 +16,19 @@
 
 package com.netflix.discovery.shared.transport.decorator;
 
+import com.netflix.discovery.shared.dns.DnsService;
+import com.netflix.discovery.shared.dns.DnsServiceImpl;
+import com.netflix.discovery.shared.resolver.DefaultEndpoint;
+import com.netflix.discovery.shared.resolver.EurekaEndpoint;
+import com.netflix.discovery.shared.transport.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.netflix.discovery.shared.dns.DnsService;
-import com.netflix.discovery.shared.dns.DnsServiceImpl;
-import com.netflix.discovery.shared.resolver.DefaultEndpoint;
-import com.netflix.discovery.shared.resolver.EurekaEndpoint;
-import com.netflix.discovery.shared.transport.EurekaHttpClient;
-import com.netflix.discovery.shared.transport.EurekaHttpResponse;
-import com.netflix.discovery.shared.transport.TransportClientFactory;
-import com.netflix.discovery.shared.transport.TransportException;
-import com.netflix.discovery.shared.transport.TransportUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * {@link EurekaHttpClient} that follows redirect links, and executes the requests against
@@ -73,10 +69,11 @@ public class RedirectingEurekaHttpClient extends EurekaHttpClientDecorator {
     @Override
     protected <R> EurekaHttpResponse<R> execute(RequestExecutor<R> requestExecutor) {
         EurekaHttpClient currentEurekaClient = delegateRef.get();
-        if (currentEurekaClient == null) {
+        if (currentEurekaClient == null) { // 未找到非 302 的 Eureka-Server
             AtomicReference<EurekaHttpClient> currentEurekaClientRef = new AtomicReference<>(factory.newClient(serviceEndpoint));
             try {
                 EurekaHttpResponse<R> response = executeOnNewServer(requestExecutor, currentEurekaClientRef);
+                // 关闭原有的委托 EurekaHttpClient ，并设置当前成功非 302 请求的 EurekaHttpClient
                 TransportUtils.shutdown(delegateRef.getAndSet(currentEurekaClientRef.get()));
                 return response;
             } catch (Exception e) {
@@ -84,7 +81,7 @@ public class RedirectingEurekaHttpClient extends EurekaHttpClientDecorator {
                 TransportUtils.shutdown(currentEurekaClientRef.get());
                 throw e;
             }
-        } else {
+        } else { // 已经找到非 302 的 Eureka-Server
             try {
                 return requestExecutor.execute(currentEurekaClient);
             } catch (Exception e) {
@@ -115,7 +112,10 @@ public class RedirectingEurekaHttpClient extends EurekaHttpClientDecorator {
                                                          AtomicReference<EurekaHttpClient> currentHttpClientRef) {
         URI targetUrl = null;
         for (int followRedirectCount = 0; followRedirectCount < MAX_FOLLOWED_REDIRECTS; followRedirectCount++) {
+            // 使用当前委托的 EurekaHttpClient 发起请求
             EurekaHttpResponse<R> httpResponse = requestExecutor.execute(currentHttpClientRef.get());
+
+            // 非 302 重定向，返回
             if (httpResponse.getStatusCode() != 302) {
                 if (followRedirectCount == 0) {
                     logger.debug("Pinning to endpoint {}", targetUrl);
@@ -125,14 +125,19 @@ public class RedirectingEurekaHttpClient extends EurekaHttpClientDecorator {
                 return httpResponse;
             }
 
+            // 解析重定向 URL
             targetUrl = getRedirectBaseUri(httpResponse.getLocation());
             if (targetUrl == null) {
                 throw new TransportException("Invalid redirect URL " + httpResponse.getLocation());
             }
 
+            // 关闭当前委托的 EurekaHttpClient
             currentHttpClientRef.getAndSet(null).shutdown();
+            // 使用重定向 URL ，创建新的委托 EurekaHttpClient
             currentHttpClientRef.set(factory.newClient(new DefaultEndpoint(targetUrl.toString())));
         }
+
+        // 超过重定向上限
         String message = "Follow redirect limit crossed for URI " + serviceEndpoint.getServiceUrl();
         logger.warn(message);
         throw new TransportException(message);
@@ -145,7 +150,7 @@ public class RedirectingEurekaHttpClient extends EurekaHttpClientDecorator {
         Matcher pathMatcher = REDIRECT_PATH_REGEX.matcher(locationURI.getPath());
         if (pathMatcher.matches()) {
             return UriBuilder.fromUri(locationURI)
-                    .host(dnsService.resolveIp(locationURI.getHost()))
+                    .host(dnsService.resolveIp(locationURI.getHost())) // 将 host 解析成 ip
                     .replacePath(pathMatcher.group(1))
                     .replaceQuery(null)
                     .build();

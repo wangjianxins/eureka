@@ -16,10 +16,6 @@
 
 package com.netflix.discovery.shared.transport.decorator;
 
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
 import com.netflix.discovery.EurekaClientNames;
 import com.netflix.discovery.shared.resolver.EurekaEndpoint;
 import com.netflix.discovery.shared.transport.EurekaHttpClient;
@@ -29,14 +25,13 @@ import com.netflix.discovery.shared.transport.TransportClientFactory;
 import com.netflix.discovery.shared.transport.decorator.MetricsCollectingEurekaHttpClient.EurekaHttpClientRequestMetrics.Status;
 import com.netflix.discovery.util.ExceptionsMetric;
 import com.netflix.discovery.util.ServoUtil;
-import com.netflix.servo.monitor.BasicCounter;
-import com.netflix.servo.monitor.BasicTimer;
-import com.netflix.servo.monitor.Counter;
-import com.netflix.servo.monitor.MonitorConfig;
-import com.netflix.servo.monitor.Stopwatch;
-import com.netflix.servo.monitor.Timer;
+import com.netflix.servo.monitor.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Tomasz Bak
@@ -67,10 +62,13 @@ public class MetricsCollectingEurekaHttpClient extends EurekaHttpClientDecorator
 
     @Override
     protected <R> EurekaHttpResponse<R> execute(RequestExecutor<R> requestExecutor) {
+        // 获得 请求类型 的 请求指标
         EurekaHttpClientRequestMetrics requestMetrics = metricsByRequestType.get(requestExecutor.getRequestType());
         Stopwatch stopwatch = requestMetrics.latencyTimer.start();
         try {
+            // 执行请求
             EurekaHttpResponse<R> httpResponse = requestExecutor.execute(delegate);
+            // 增加 请求指标
             requestMetrics.countersByStatus.get(mappedStatus(httpResponse)).increment();
             return httpResponse;
         } catch (Exception e) {
