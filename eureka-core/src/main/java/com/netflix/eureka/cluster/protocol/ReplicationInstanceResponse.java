@@ -9,7 +9,13 @@ import com.netflix.appinfo.InstanceInfo;
  */
 public class ReplicationInstanceResponse {
 
+    /**
+     * 状态码
+     */
     private final int statusCode;
+    /**
+     * 响应实体（应用实例）
+     */
     private final InstanceInfo responseEntity;
 
     @JsonCreator

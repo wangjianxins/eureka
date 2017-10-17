@@ -1,8 +1,5 @@
 package com.netflix.eureka.cluster;
 
-import java.io.IOException;
-import java.util.List;
-
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.transport.EurekaHttpResponse;
 import com.netflix.eureka.cluster.protocol.ReplicationInstance;
@@ -14,9 +11,14 @@ import com.netflix.eureka.util.batcher.TaskProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.List;
+
 import static com.netflix.eureka.cluster.protocol.ReplicationInstance.ReplicationInstanceBuilder.aReplicationInstance;
 
 /**
+ * 同步操作任务处理器
+ *
  * @author Tomasz Bak
  */
 class ReplicationTaskProcessor implements TaskProcessor<ReplicationTask> {
@@ -66,9 +68,12 @@ class ReplicationTaskProcessor implements TaskProcessor<ReplicationTask> {
 
     @Override
     public ProcessingResult process(List<ReplicationTask> tasks) {
+        // 创建 批量提交同步操作任务的请求对象
         ReplicationList list = createReplicationListOf(tasks);
         try {
+            // 发起 批量提交同步操作任务的请求
             EurekaHttpResponse<ReplicationListResponse> response = replicationClient.submitBatchUpdates(list);
+            // 处理 批量提交同步操作任务的响应
             int statusCode = response.getStatusCode();
             if (!isSuccess(statusCode)) {
                 if (statusCode == 503) {
@@ -102,7 +107,7 @@ class ReplicationTaskProcessor implements TaskProcessor<ReplicationTask> {
      */
     private void logNetworkErrorSample(ReplicationTask task, Throwable e) {
         long now = System.currentTimeMillis();
-        if (now - lastNetworkErrorTime > 10000) {
+        if (now - lastNetworkErrorTime > 10000) { // 部分采样（采样条件，大于 10 s）
             lastNetworkErrorTime = now;
             StringBuilder sb = new StringBuilder();
             sb.append("Network level connection to peer ").append(peerId);
@@ -126,12 +131,14 @@ class ReplicationTaskProcessor implements TaskProcessor<ReplicationTask> {
     }
 
     private void handleBatchResponse(ReplicationTask task, ReplicationInstanceResponse response) {
+        // 执行成功
         int statusCode = response.getStatusCode();
         if (isSuccess(statusCode)) {
             task.handleSuccess();
             return;
         }
 
+        // 执行失败
         try {
             task.handleFailure(response.getStatusCode(), response.getResponseEntity());
         } catch (Throwable e) {
@@ -172,21 +179,29 @@ class ReplicationTaskProcessor implements TaskProcessor<ReplicationTask> {
 
     private static ReplicationInstance createReplicationInstanceOf(InstanceReplicationTask task) {
         ReplicationInstanceBuilder instanceBuilder = aReplicationInstance();
+        // appName
         instanceBuilder.withAppName(task.getAppName());
+        // id
         instanceBuilder.withId(task.getId());
         InstanceInfo instanceInfo = task.getInstanceInfo();
         if (instanceInfo != null) {
+            // overrideStatus
             String overriddenStatus = task.getOverriddenStatus() == null ? null : task.getOverriddenStatus().name();
             instanceBuilder.withOverriddenStatus(overriddenStatus);
+            // lastDirtyTimestamp
             instanceBuilder.withLastDirtyTimestamp(instanceInfo.getLastDirtyTimestamp());
+            // instanceInfo
             if (task.shouldReplicateInstanceInfo()) {
                 instanceBuilder.withInstanceInfo(instanceInfo);
             }
+            // status
             String instanceStatus = instanceInfo.getStatus() == null ? null : instanceInfo.getStatus().name();
             instanceBuilder.withStatus(instanceStatus);
         }
+        // action
         instanceBuilder.withAction(task.getAction());
         return instanceBuilder.build();
     }
+
 }
 

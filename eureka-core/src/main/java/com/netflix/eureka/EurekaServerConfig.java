@@ -212,7 +212,6 @@ public interface EurekaServerConfig {
      * registration information.
      *
      * Eureka-Server 启动时，从远程 Eureka-Server 读取不到注册信息时，多长时间不允许 Eureka-Client 访问。
-     * TODO（后面源码在细读，可能要修正）
      *
      * @return time in milliseconds.
      */

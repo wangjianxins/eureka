@@ -197,6 +197,7 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
         int count = 0;
 
         for (int i = 0; ((i < serverConfig.getRegistrySyncRetries()) && (count == 0)); i++) {
+            // 未读取到注册信息，sleep 等待
             if (i > 0) {
                 try {
                     Thread.sleep(serverConfig.getRegistrySyncRetryWaitMs());
@@ -205,12 +206,14 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
                     break;
                 }
             }
+
+            // 获取注册信息
             Applications apps = eurekaClient.getApplications();
             for (Application app : apps.getRegisteredApplications()) {
                 for (InstanceInfo instance : app.getInstances()) {
                     try {
-                        if (isRegisterable(instance)) {
-                            register(instance, instance.getLeaseInfo().getDurationInSecs(), true);
+                        if (isRegisterable(instance)) { // 判断是否能够注册
+                            register(instance, instance.getLeaseInfo().getDurationInSecs(), true); // 注册
                             count++;
                         }
                     } catch (Throwable t) {
@@ -230,18 +233,23 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
                 (int) (this.expectedNumberOfRenewsPerMin * serverConfig.getRenewalPercentThreshold());
         logger.info("Got " + count + " instances from neighboring DS node");
         logger.info("Renew threshold is: " + numberOfRenewsPerMinThreshold);
+        // 设置启动时间
         this.startupTime = System.currentTimeMillis();
+        //
         if (count > 0) {
             this.peerInstancesTransferEmptyOnStartup = false;
         }
+        // TODO AWS 跳过
         DataCenterInfo.Name selfName = applicationInfoManager.getInfo().getDataCenterInfo().getName();
         boolean isAws = Name.Amazon == selfName;
         if (isAws && serverConfig.shouldPrimeAwsReplicaConnections()) {
             logger.info("Priming AWS connections for all replicas..");
             primeAwsReplicas(applicationInfoManager);
         }
+        //
         logger.info("Changing status to UP");
         applicationInfoManager.setInstanceStatus(InstanceStatus.UP);
+        //
         super.postInit();
     }
 
@@ -620,6 +628,8 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
             if (isReplication) {
                 numberOfReplicationsLastMin.increment();
             }
+
+            // Eureka-Server 发起的请求 或者 集群为空
             // If it is a replication already, do not replicate again as this will create a poison replication
             if (peerEurekaNodes == Collections.EMPTY_LIST || isReplication) {
                 return;

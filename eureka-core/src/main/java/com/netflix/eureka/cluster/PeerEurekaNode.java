@@ -186,8 +186,8 @@ public class PeerEurekaNode {
     public void cancel(final String appName, final String id) throws Exception {
         long expiryTime = System.currentTimeMillis() + maxProcessingDelayMs;
         batchingDispatcher.process(
-                taskId("cancel", appName, id),
-                new InstanceReplicationTask(targetHost, Action.Cancel, appName, id) {
+                taskId("cancel", appName, id), // id
+                new InstanceReplicationTask(targetHost, Action.Cancel, appName, id) { // ReplicationTask
                     @Override
                     public EurekaHttpResponse<Void> execute() {
                         return replicationClient.cancel(appName, id);
@@ -223,7 +223,7 @@ public class PeerEurekaNode {
     public void heartbeat(final String appName, final String id,
                           final InstanceInfo info, final InstanceStatus overriddenStatus,
                           boolean primeConnection) throws Throwable {
-        if (primeConnection) {
+        if (primeConnection) { // TODO AWS 使用，暂时跳过
             // We do not care about the result for priming request.
             replicationClient.sendHeartBeat(appName, id, info, overriddenStatus);
             return;
@@ -390,10 +390,12 @@ public class PeerEurekaNode {
                 logger.warn("Peer wants us to take the instance information from it, since the timestamp differs,"
                         + "Id : {} My Timestamp : {}, Peer's timestamp: {}", id, info.getLastDirtyTimestamp(), infoFromPeer.getLastDirtyTimestamp());
 
+                // 存储应用实例的覆盖状态
                 if (infoFromPeer.getOverriddenStatus() != null && !InstanceStatus.UNKNOWN.equals(infoFromPeer.getOverriddenStatus())) {
                     logger.warn("Overridden Status info -id {}, mine {}, peer's {}", id, info.getOverriddenStatus(), infoFromPeer.getOverriddenStatus());
                     registry.storeOverriddenStatusIfRequired(appName, id, infoFromPeer.getOverriddenStatus());
                 }
+                // 向自身注册
                 registry.register(infoFromPeer, true);
             }
         } catch (Throwable e) {
