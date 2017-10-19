@@ -149,7 +149,7 @@ public class DiscoveryClient implements EurekaClient {
     private final AtomicLong fetchRegistryGeneration;
     private final ApplicationInfoManager applicationInfoManager;
     private final InstanceInfo instanceInfo;
-    /**
+    /**sync
      * 获取哪些区域( Region )集合的注册信息
      */
     private final AtomicReference<String> remoteRegionsToFetch;

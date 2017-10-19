@@ -104,6 +104,11 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
      */
     private ConcurrentLinkedQueue<RecentlyChangedItem> recentlyChangedQueue = new ConcurrentLinkedQueue<RecentlyChangedItem>();
 
+    /**
+     * 读写锁
+     *
+     * 详细解析见博客：http://www.iocoder.cn/Eureka/instance-registry-read-write-lock/
+     */
     private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     private final Lock read = readWriteLock.readLock();
     private final Lock write = readWriteLock.writeLock();
@@ -244,7 +249,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
      */
     public void register(InstanceInfo registrant, int leaseDuration, boolean isReplication) {
         try {
-            // TODO 为什么是读锁
+            // 获取读锁
             read.lock();
             Map<String, Lease<InstanceInfo>> gMap = registry.get(registrant.getAppName());
             // 增加 注册次数 到 监控
@@ -370,7 +375,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
      */
     protected boolean internalCancel(String appName, String id, boolean isReplication) {
         try {
-            // 获得锁 TODO 芋艿：疑问
+            // 获得读锁
             read.lock();
             // 增加 取消注册次数 到 监控
             CANCEL.increment(isReplication);
@@ -550,7 +555,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                                 InstanceStatus newStatus, String lastDirtyTimestamp,
                                 boolean isReplication) {
         try {
-            // TODO  为什么是读锁
+            // 获取读锁
             read.lock();
             // 添加 覆盖状态变更次数 到 监控
             STATUS_UPDATE.increment(isReplication);
@@ -633,7 +638,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                                         String lastDirtyTimestamp,
                                         boolean isReplication) {
         try {
-            // TODO  为什么是读锁
+            // 获取读锁
             read.lock();
             // 添加 覆盖状态删除次数 到 监控
             STATUS_OVERRIDE_DELETE.increment(isReplication);
@@ -1000,7 +1005,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
         apps.setVersion(responseCache.getVersionDelta().get());
         Map<String, Application> applicationInstancesMap = new HashMap<String, Application>();
         try {
-            // 获取写锁 TODO why？
+            // 获取写锁
             write.lock();
             // 获取 最近租约变更记录队列
             Iterator<RecentlyChangedItem> iter = this.recentlyChangedQueue.iterator();

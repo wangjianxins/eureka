@@ -16,14 +16,16 @@
 
 package com.netflix.eureka;
 
+import com.netflix.appinfo.AbstractEurekaIdentity;
+import com.netflix.appinfo.EurekaClientIdentity;
+import com.netflix.discovery.util.RateLimiter;
+import com.netflix.eureka.util.EurekaMonitors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -33,13 +35,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.netflix.appinfo.AbstractEurekaIdentity;
-import com.netflix.appinfo.EurekaClientIdentity;
-import com.netflix.eureka.util.EurekaMonitors;
-import com.netflix.discovery.util.RateLimiter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Rate limiting filter, with configurable threshold above which non-privileged clients
@@ -95,7 +90,24 @@ public class RateLimitingFilter implements Filter {
 
     private static final Pattern TARGET_RE = Pattern.compile("^.*/apps(/[^/]*)?$");
 
-    enum Target {FullFetch, DeltaFetch, Application, Other}
+    /**
+     * 目标类型
+     */
+    enum Target {
+        /**
+         * 全量获取注册信息
+         */
+        FullFetch,
+        /**
+         * 增量获取注册信息
+         */
+        DeltaFetch,
+        /**
+         *
+         */
+        Application,
+        Other
+    }
 
     /**
      * Includes both full and delta fetches.
@@ -129,16 +141,21 @@ public class RateLimitingFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        // 获得 Target
         Target target = getTarget(request);
+
+        // Other Target ，不做限流
         if (target == Target.Other) {
             chain.doFilter(request, response);
             return;
         }
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-
+        // 判断是否被限流
         if (isRateLimited(httpRequest, target)) {
+            // TODO[0012]：监控相关，跳过
             incrementStats(target);
+            // 如果开启限流，返回 503 状态码
             if (serverConfig.isRateLimiterEnabled()) {
                 ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                 return;
@@ -173,10 +190,12 @@ public class RateLimitingFilter implements Filter {
     }
 
     private boolean isRateLimited(HttpServletRequest request, Target target) {
+        // 判断是否特权应用
         if (isPrivileged(request)) {
             logger.debug("Privileged {} request", target);
             return false;
         }
+        // 判断是否被超载( 限流 )
         if (isOverloaded(target)) {
             logger.debug("Overloaded {} request; discarding it", target);
             return true;
@@ -186,21 +205,23 @@ public class RateLimitingFilter implements Filter {
     }
 
     private boolean isPrivileged(HttpServletRequest request) {
+        // 是否对标准客户端开启限流
         if (serverConfig.isRateLimiterThrottleStandardClients()) {
             return false;
         }
+        // 以请求头( "DiscoveryIdentity-Name" ) 判断是否在标准客户端名集合内
         Set<String> privilegedClients = serverConfig.getRateLimiterPrivilegedClients();
         String clientName = request.getHeader(AbstractEurekaIdentity.AUTH_NAME_HEADER_KEY);
         return privilegedClients.contains(clientName) || DEFAULT_PRIVILEGED_CLIENTS.contains(clientName);
     }
 
     private boolean isOverloaded(Target target) {
-        int maxInWindow = serverConfig.getRateLimiterBurstSize();
-        int fetchWindowSize = serverConfig.getRateLimiterRegistryFetchAverageRate();
+        int maxInWindow = serverConfig.getRateLimiterBurstSize(); // 10
+        int fetchWindowSize = serverConfig.getRateLimiterRegistryFetchAverageRate(); // 500
         boolean overloaded = !registryFetchRateLimiter.acquire(maxInWindow, fetchWindowSize);
 
         if (target == Target.FullFetch) {
-            int fullFetchWindowSize = serverConfig.getRateLimiterFullFetchAverageRate();
+            int fullFetchWindowSize = serverConfig.getRateLimiterFullFetchAverageRate(); // 100
             overloaded |= !registryFullFetchRateLimiter.acquire(maxInWindow, fullFetchWindowSize);
         }
         return overloaded;

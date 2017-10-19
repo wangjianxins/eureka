@@ -520,7 +520,10 @@ public interface EurekaClientConfig {
     /**
      * Indicates whether the client is only interested in the registry information for a single VIP.
      *
-     * TODO 芋艿：后面研究下
+     * 只获得一个 `vipAddress` 对应的应用实例们的注册信息。
+     *
+     * {@link AbstractVIPResource}
+     * {@link com.netflix.discovery.shared.transport.EurekaHttpClient#getVip(String, String...)}
      *
      * @return the address of the VIP (name:port).
      * <code>null</code> if single VIP interest is not present.

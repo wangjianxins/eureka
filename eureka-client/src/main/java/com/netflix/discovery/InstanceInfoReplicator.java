@@ -52,9 +52,18 @@ class InstanceInfoReplicator implements Runnable {
      */
     private final AtomicBoolean started;
 
-    private final RateLimiter rateLimiter; // 限流相关，跳过
-    private final int burstSize; // 限流相关，跳过
-    private final int allowedRatePerMinute; // 限流相关，跳过
+    /**
+     * RateLimiter
+     */
+    private final RateLimiter rateLimiter;
+    /**
+     * 令牌桶上限，默认：2
+     */
+    private final int burstSize;
+    /**
+     * 令牌再装平均速率，默认：60 * 2 / 30 = 4
+     */
+    private final int allowedRatePerMinute;
 
     InstanceInfoReplicator(DiscoveryClient discoveryClient, InstanceInfo instanceInfo, int replicationIntervalSeconds, int burstSize) {
         this.discoveryClient = discoveryClient;

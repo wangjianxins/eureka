@@ -167,6 +167,9 @@ public class ExampleEurekaClient {
 
     private static void injectEurekaConfiguration() throws UnknownHostException {
         String myHostName = InetAddress.getLocalHost().getHostName();
+//        if (fa) {
+//            myHostName = "127.0.0.1";
+//        }
         String myServiceUrl = "http://" + myHostName + ":8080/v2/";
 
         System.setProperty("eureka.region", "default");
@@ -202,7 +205,7 @@ public class ExampleEurekaClient {
 //            System.setProperty("eureka.serviceUrl.default.defaultZone", "4,5,6");
         }
 
-        if (true) {
+        if (false) {
             System.setProperty("eureka.eurekaServer.proxyHost", "http://127.0.0.1");
             System.setProperty("eureka.eurekaServer.proxyPort", "6666");
             System.setProperty("eureka.eurekaServer.username", "qqq");

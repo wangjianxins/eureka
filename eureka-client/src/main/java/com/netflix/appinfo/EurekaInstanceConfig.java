@@ -402,6 +402,8 @@ public interface EurekaInstanceConfig {
      * address. The exact field values will depend on the implementation details of the corresponding
      * implementing DataCenterInfo types.
      *
+     * // TODO 芋艿，亚马逊，暂时跳过
+     *
      * @return an ordered list of fields that should be used to preferentially
      *         resolve this instance's default address, empty String[] for default.
      */

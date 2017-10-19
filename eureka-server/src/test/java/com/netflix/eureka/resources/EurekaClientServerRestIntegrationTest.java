@@ -228,7 +228,7 @@ public class EurekaClientServerRestIntegrationTest {
         System.setProperty("eureka.awsSecretKey", "fake_aws_secret_key");
         System.setProperty("eureka.numberRegistrySyncRetries", "0");
 
-        int type = 2;
+        int type = 0;
 
         if (type == 1) { // 测试一致性哈希算法有效性，case 1
 //            System.setProperty("registration.enabled", "false");
@@ -281,6 +281,8 @@ public class EurekaClientServerRestIntegrationTest {
 //        handler.setServer(server);
 //
 //        handler.start();
+        File f = new File(Object.class.getResource("/").getPath());
+        System.out.println(f);
 
         // TODO Thread.currentThread().getContextClassLoader() 获取不到路径，先暂时这样；
         WebAppContext webAppCtx = new WebAppContext(new File("./eureka-server/src/main/webapp").getAbsolutePath(), "/");
