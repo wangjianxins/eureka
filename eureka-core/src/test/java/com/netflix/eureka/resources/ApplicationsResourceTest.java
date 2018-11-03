@@ -21,6 +21,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author David Liu
+ * s
  */
 public class ApplicationsResourceTest extends AbstractTester {
     private ApplicationsResource applicationsResource;
